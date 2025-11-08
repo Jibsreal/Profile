@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Neon Block Shooter</title>
 <style>
     body {
@@ -13,7 +13,6 @@
         height: 100vh;
         margin: 0;
         font-family: 'Segoe UI', Arial, sans-serif;
-        overflow: hidden;
         touch-action: none;
     }
 
@@ -21,14 +20,13 @@
         background: #232a34;
         border-radius: 16px;
         box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        padding: 24px;
+        padding: 32px;
         display: flex;
         flex-direction: column;
         align-items: center;
         position: relative;
         gap: 12px;
-        width: 90vw;
-        max-width: 420px;
+        overflow: hidden;
     }
 
     #score {
@@ -44,8 +42,7 @@
         box-shadow: 0 4px 16px #0006;
         display: block;
         transition: box-shadow 0.2s;
-        width: 100%;
-        height: auto;
+        touch-action: none;
     }
 
     #game-canvas.shoot {
@@ -70,7 +67,6 @@
         transform: scale(1.05);
     }
 
-    /* Overlay base */
     .overlay {
         position: absolute;
         inset: 0;
@@ -82,8 +78,6 @@
         align-items: center;
         gap: 20px;
         transition: opacity 0.4s ease;
-        text-align: center;
-        padding: 20px;
     }
 
     .hidden {
@@ -99,6 +93,7 @@
 
     p {
         color: #ccc;
+        text-align: center;
         max-width: 280px;
         font-size: 1rem;
     }
@@ -114,30 +109,16 @@
         font-weight: bold;
     }
 
-    /* Mobile touch controls */
-    #touch-controls {
-        display: none;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 12px;
+    /* Touch control zones */
+    .touch-zone {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        opacity: 0;
     }
-
-    .touch-btn {
-        background: rgba(0, 234, 255, 0.15);
-        border: 1px solid rgba(0,234,255,0.3);
-        color: #00eaff;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-weight: bold;
-        font-size: 1rem;
-        user-select: none;
-    }
-
-    @media (max-width: 640px) {
-        #touch-controls {
-            display: flex;
-        }
-    }
+    #left-zone { left: 0; }
+    #right-zone { right: 0; }
 </style>
 </head>
 <body>
@@ -145,17 +126,15 @@
     <div id="score">Score: 0</div>
     <canvas id="game-canvas" width="400" height="600"></canvas>
 
-    <!-- Main Menu -->
     <div id="menu" class="overlay">
         <h1>Neon Block Shooter</h1>
-        <p>Move: <b>A/D</b> or arrows<br>Shoot: <b>F</b> or tap 🔫<br>Destroy blocks before they reach you!</p>
+        <p>Use <b>A</b> / <b>D</b> or touch sides to move.<br>Press <b>F</b> or tap to shoot.</p>
         <div class="menu-buttons">
             <button id="play-btn">Start Game</button>
             <button id="exit-btn">Return to Index</button>
         </div>
     </div>
 
-    <!-- Game Over Screen -->
     <div id="game-over" class="overlay hidden">
         <h2>Game Over</h2>
         <p id="final-score">Score: 0</p>
@@ -166,12 +145,9 @@
         </div>
     </div>
 
-    <!-- Touch Controls -->
-    <div id="touch-controls">
-        <div class="touch-btn" id="left-btn">◀</div>
-        <div class="touch-btn" id="shoot-btn">🔫</div>
-        <div class="touch-btn" id="right-btn">▶</div>
-    </div>
+    <!-- Touch zones -->
+    <div id="left-zone" class="touch-zone"></div>
+    <div id="right-zone" class="touch-zone"></div>
 </div>
 
 <script>
@@ -185,6 +161,12 @@ const restartBtn = document.getElementById('restart-btn');
 const backMenuBtn = document.getElementById('back-menu-btn');
 const finalScoreEl = document.getElementById('final-score');
 const exitBtns = [document.getElementById('exit-btn'), document.getElementById('exit-btn-over')];
+const leftZone = document.getElementById('left-zone');
+const rightZone = document.getElementById('right-zone');
+
+const music = new Audio("https://cdn.pixabay.com/download/audio/2022/10/03/audio_68a18c9e65.mp3?filename=arcade-game-music-loop-112191.mp3");
+music.loop = true;
+music.volume = 0;
 
 const player = {
     x: canvas.width / 2 - 25,
@@ -202,7 +184,17 @@ let gameActive = false;
 let animationId = null;
 let blockSpawnTimer = null;
 let leftPressed = false, rightPressed = false;
-let canShoot = true;
+
+function fadeInMusic() {
+    music.play().then(() => {
+        let vol = 0;
+        const fade = setInterval(() => {
+            vol += 0.05;
+            music.volume = vol;
+            if (vol >= 0.4) clearInterval(fade);
+        }, 100);
+    }).catch(() => {});
+}
 
 function drawPlayer() {
     ctx.save();
@@ -246,10 +238,9 @@ function spawnBlock() {
 
 function update() {
     bullets.forEach(bullet => bullet.y -= bullet.speed);
-    bullets = bullets.filter(bullet => bullet.y + bullet.height > 0);
-
-    blocks.forEach(block => block.y += 2 + score * 0.02);
-    blocks = blocks.filter(block => block.y < canvas.height);
+    bullets = bullets.filter(b => b.y + b.height > 0);
+    blocks.forEach(b => b.y += 2 + score * 0.03);
+    blocks = blocks.filter(b => b.y < canvas.height);
 
     bullets.forEach((bullet, bi) => {
         blocks.forEach((block, blki) => {
@@ -258,7 +249,7 @@ function update() {
                 bullet.y < block.y + block.height &&
                 bullet.y + bullet.height > block.y) {
                 block.hitAnim = true;
-                setTimeout(() => block.hitAnim = false, 100);
+                setTimeout(() => block.hitAnim = false, 120);
                 bullets.splice(bi, 1);
                 blocks.splice(blki, 1);
                 score++;
@@ -275,6 +266,8 @@ function update() {
             return;
         }
     }
+
+    movePlayer(); // now integrated per frame for smoother mobile movement
 }
 
 function draw() {
@@ -291,20 +284,9 @@ function loop() {
 }
 
 function shoot() {
-    if (!canShoot) return;
-    canShoot = false;
-    bullets.push({
-        x: player.x + player.width / 2 - 4,
-        y: player.y - 12,
-        width: 8,
-        height: 16,
-        speed: 10
-    });
+    bullets.push({ x: player.x + player.width / 2 - 4, y: player.y - 12, width: 8, height: 16, speed: 10 });
     canvas.classList.add('shoot');
-    setTimeout(() => {
-        canvas.classList.remove('shoot');
-        canShoot = true;
-    }, 200);
+    setTimeout(() => canvas.classList.remove('shoot'), 80);
 }
 
 function resetGame() {
@@ -324,7 +306,7 @@ function movePlayer() {
 function blockSpawner() {
     if (!gameActive) return;
     spawnBlock();
-    let interval = Math.max(600 - score * 8, 150);
+    let interval = Math.max(400 - score * 10, 120);
     blockSpawnTimer = setTimeout(blockSpawner, interval);
 }
 
@@ -337,6 +319,7 @@ function gameOver() {
 }
 
 function startGame() {
+    fadeInMusic();
     resetGame();
     gameActive = true;
     menu.classList.add('hidden');
@@ -351,32 +334,31 @@ function returnToMenu() {
     gameOverScreen.classList.add('hidden');
 }
 
+// Keyboard
 document.addEventListener('keydown', e => {
-    if (e.code === 'KeyA' || e.code === 'ArrowLeft') leftPressed = true;
-    if (e.code === 'KeyD' || e.code === 'ArrowRight') rightPressed = true;
-    if ((e.code === 'KeyF' || e.code === 'Space' || e.code === 'ArrowUp') && gameActive) shoot();
+    if (e.code === 'KeyA') leftPressed = true;
+    if (e.code === 'KeyD') rightPressed = true;
+    if ((e.code === 'KeyF' || e.code === 'ArrowUp') && gameActive) shoot();
 });
 document.addEventListener('keyup', e => {
-    if (e.code === 'KeyA' || e.code === 'ArrowLeft') leftPressed = false;
-    if (e.code === 'KeyD' || e.code === 'ArrowRight') rightPressed = false;
+    if (e.code === 'KeyA') leftPressed = false;
+    if (e.code === 'KeyD') rightPressed = false;
 });
 
-setInterval(() => {
-    if (gameActive) movePlayer();
-}, 16);
-
-// Touch controls
-document.getElementById('left-btn').addEventListener('touchstart', () => leftPressed = true);
-document.getElementById('left-btn').addEventListener('touchend', () => leftPressed = false);
-document.getElementById('right-btn').addEventListener('touchstart', () => rightPressed = true);
-document.getElementById('right-btn').addEventListener('touchend', () => rightPressed = false);
-document.getElementById('shoot-btn').addEventListener('touchstart', () => { if (gameActive) shoot(); });
+// Touch zones
+leftZone.addEventListener('touchstart', () => leftPressed = true);
+leftZone.addEventListener('touchend', () => leftPressed = false);
+rightZone.addEventListener('touchstart', () => rightPressed = true);
+rightZone.addEventListener('touchend', () => rightPressed = false);
+canvas.addEventListener('touchstart', () => { if (gameActive) shoot(); });
 
 // Buttons
 playBtn.onclick = startGame;
 restartBtn.onclick = startGame;
 backMenuBtn.onclick = returnToMenu;
-exitBtns.forEach(btn => btn.onclick = () => window.location.href = "index.html");
+exitBtns.forEach(btn => {
+    btn.onclick = () => { window.location.href = "index.html"; };
+});
 </script>
 </body>
 </html>
