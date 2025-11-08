@@ -1,362 +1,360 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neon Block Shooter</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Neon Block Shooter — Fixed Mobile Touch</title>
 <style>
-body {
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #181c24;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  overflow: hidden;
-  touch-action: none;
-}
-
-#game-container {
-  position: relative;
-  background: #232a34;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  overflow: hidden;
-}
-
-#score {
-  color: white;
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-  text-shadow: 0 0 8px #00eaff88;
-}
-
-#game-canvas {
-  border-radius: 12px;
-  background: linear-gradient(180deg, #2d3546 0%, #1a1e26 100%);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-}
-
-button {
-  background: linear-gradient(90deg, #00eaff 0%, #0077ff 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 32px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 8px #00eaff44;
-  transition: all 0.2s ease;
-  z-index: 5;
-}
-
-button:hover {
-  transform: scale(1.05);
-  background: linear-gradient(90deg, #0077ff 0%, #00eaff 100%);
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(24, 28, 36, 0.97);
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  text-align: center;
-  transition: opacity 0.4s ease;
-  z-index: 4;
-}
-
-.overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-h1, h2 {
-  color: #00eaff;
-  text-shadow: 0 0 12px #00eaff99;
-  margin: 0;
-}
-
-p {
-  color: #ccc;
-  font-size: 1rem;
-  max-width: 280px;
-  line-height: 1.4;
-}
-
-.menu-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Floating music button */
-#music-btn {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background: rgba(0, 234, 255, 0.15);
-  border: 1px solid #00eaff55;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: #00eaff;
-  box-shadow: 0 0 8px #00eaff44;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 6;
-}
-#music-btn:hover {
-  transform: scale(1.1);
-  background: rgba(0, 234, 255, 0.25);
-}
-
-/* Touch zones (disabled by default) */
-.touch-zone {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  opacity: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-#left-zone { left: 0; }
-#right-zone { right: 0; }
+  :root{ --bg:#181c24; --panel:#232a34; --accent:#00eaff; --muted:#ccc; }
+  html,body{height:100%;margin:0}
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--bg);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    touch-action:none; /* help with preventing gesture delays */
+    overflow:hidden;
+  }
+  #game-container{
+    width: min(420px, 94vw);
+    padding:18px;
+    background:var(--panel);
+    border-radius:14px;
+    box-shadow:0 10px 36px rgba(0,0,0,0.5);
+    position:relative;
+  }
+  #score{ color:#fff; font-weight:700; text-shadow:0 0 8px #0006; margin-bottom:8px; }
+  canvas{ width:100%; height:auto; display:block; border-radius:12px; background:linear-gradient(180deg,#2d3546,#1a1e26); box-shadow:0 6px 20px rgba(0,0,0,0.5); touch-action:none; }
+  .overlay{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:rgba(12,14,18,0.95); border-radius:14px; z-index:4; }
+  .overlay.hidden{ opacity:0; pointer-events:none; transition:opacity .3s; }
+  h1,h2{ color:var(--accent); margin:0; text-shadow:0 0 12px #00eaff66 }
+  p{ color:var(--muted); margin:0; text-align:center }
+  .menu-buttons{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+  button{ cursor:pointer; border:0; padding:10px 18px; border-radius:10px; background:linear-gradient(90deg,var(--accent),#0077ff); color:#fff; font-weight:700; box-shadow:0 6px 18px rgba(0,234,255,0.08); }
+  button.secondary{ background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); font-weight:600; }
+  #music-btn{ position:absolute; right:12px; bottom:12px; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; z-index:6; cursor:pointer; background:rgba(0,234,255,0.08); border:1px solid rgba(0,234,255,0.12); color:var(--accent); box-shadow:0 6px 18px rgba(0,234,255,0.06); }
+  #music-btn:hover{ transform:scale(1.06); }
+  footer{ color:var(--muted); font-size:12px; text-align:center; margin-top:8px; }
 </style>
 </head>
 <body>
-<div id="game-container">
-  <div id="score">Score: 0</div>
-  <canvas id="game-canvas" width="400" height="600"></canvas>
-  <div id="music-btn" title="Toggle Music">🔊</div>
+  <div id="game-container" role="application" aria-label="Neon Block Shooter">
+    <div id="score">Score: 0</div>
+    <canvas id="game-canvas" width="400" height="600" aria-hidden="false"></canvas>
 
-  <!-- Main Menu -->
-  <div id="menu" class="overlay">
-    <h1>Neon Block Shooter</h1>
-    <p>Use <b>A</b>/<b>D</b> or tap sides to move.<br>Tap or press <b>F</b> to shoot.</p>
-    <div class="menu-buttons">
-      <button id="play-btn">Start Game</button>
-      <button id="exit-btn">Return to Index</button>
+    <div id="menu" class="overlay">
+      <h1>Neon Block Shooter</h1>
+      <p>Tap center to shoot. Hold left/right of the screen to move.<br>Keyboard: A / D to move, F or Space to shoot.</p>
+      <div class="menu-buttons">
+        <button id="play-btn">Start Game</button>
+        <button id="exit-btn" class="secondary">Return to Index</button>
+      </div>
     </div>
-  </div>
 
-  <!-- Game Over -->
-  <div id="game-over" class="overlay hidden">
-    <h2>Game Over</h2>
-    <p id="final-score">Score: 0</p>
-    <div class="menu-buttons">
-      <button id="restart-btn">Restart</button>
-      <button id="menu-btn">Back to Menu</button>
-      <button id="exit-btn-over">Return to Index</button>
+    <div id="game-over" class="overlay hidden" aria-hidden="true">
+      <h2>Game Over</h2>
+      <p id="final-score">Score: 0</p>
+      <div class="menu-buttons">
+        <button id="restart-btn">Restart</button>
+        <button id="menu-btn" class="secondary">Back to Menu</button>
+        <button id="exit-btn-over" class="secondary">Return to Index</button>
+      </div>
     </div>
-  </div>
 
-  <!-- Touch controls -->
-  <div id="left-zone" class="touch-zone"></div>
-  <div id="right-zone" class="touch-zone"></div>
-</div>
+    <div id="music-btn" title="Toggle music">🔊</div>
+    <footer style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">© 2025</footer>
+  </div>
 
 <script>
-const canvas = document.getElementById("game-canvas");
-const ctx = canvas.getContext("2d");
-const scoreEl = document.getElementById("score");
-const menu = document.getElementById("menu");
-const gameOverScreen = document.getElementById("game-over");
-const playBtn = document.getElementById("play-btn");
-const restartBtn = document.getElementById("restart-btn");
-const menuBtn = document.getElementById("menu-btn");
-const finalScoreEl = document.getElementById("final-score");
-const exitBtns = [document.getElementById("exit-btn"), document.getElementById("exit-btn-over")];
-const leftZone = document.getElementById("left-zone");
-const rightZone = document.getElementById("right-zone");
-const musicBtn = document.getElementById("music-btn");
+/* ============================
+   Neon Block Shooter — CLEAN
+   Touch: tap -> shoot, hold-left/right -> move
+   ============================ */
 
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const menu = document.getElementById('menu');
+const gameOver = document.getElementById('game-over');
+const finalScore = document.getElementById('final-score');
+const playBtn = document.getElementById('play-btn');
+const restartBtn = document.getElementById('restart-btn');
+const menuBtn = document.getElementById('menu-btn');
+const exitBtns = [document.getElementById('exit-btn'), document.getElementById('exit-btn-over')];
+const musicBtn = document.getElementById('music-btn');
+
+let W = canvas.width = 400;
+let H = canvas.height = 600;
+
+/* --- audio --- */
 const music = new Audio("Music.mp3");
 music.loop = true;
 music.volume = 0.3;
 let musicMuted = false;
-
-musicBtn.onclick = () => {
+musicBtn.addEventListener('click', () => {
   musicMuted = !musicMuted;
-  if (musicMuted) {
-    musicBtn.textContent = "🔇";
-    fadeOutMusic();
-  } else {
-    musicBtn.textContent = "🔊";
-    playMusic();
-  }
-};
+  musicMuted ? (music.pause(), musicBtn.textContent='🔇') : (music.play().catch(()=>{}), musicBtn.textContent='🔊');
+});
 
-function playMusic() {
-  if (!musicMuted) music.play().catch(()=>{});
-}
-function fadeOutMusic() {
-  let vol = music.volume;
-  const fade = setInterval(() => {
-    vol -= 0.05;
-    music.volume = Math.max(vol, 0);
-    if (vol <= 0) {
-      clearInterval(fade);
-      music.pause();
-      music.volume = 0.3;
-    }
-  }, 80);
-}
-
-const player = { x: 175, y: 540, width: 50, height: 20, speed: 7 };
+/* --- game state --- */
+const player = { x: W/2 - 25, y: H - 60, w: 50, h: 20, color:'#00eaff', speed: 6 };
 let bullets = [];
 let blocks = [];
 let score = 0;
-let gameActive = false;
-let leftPressed = false, rightPressed = false;
+let running = false;
+let lastT = 0;
 let spawnTimer = 0;
-let lastTime = 0;
 
-function spawnBlock() {
-  const width = 60, height = 30;
-  const x = Math.random() * (canvas.width - width);
-  const color = `hsl(${Math.random()*360}, 80%, 60%)`;
-  blocks.push({ x, y: -height, width, height, color });
+/* --- input state --- */
+let leftPress = false;
+let rightPress = false;
+
+/* --- touch helpers: to decide tap vs hold --- */
+let activeTouches = {}; // map touchId -> {startX,startY,startTime,mode:'tap'|'hold-left'|'hold-right'}
+
+/* utility */
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+/* --- drawing --- */
+function drawPlayer(){
+  ctx.save();
+  ctx.fillStyle = player.color;
+  ctx.shadowColor = '#00eaff';
+  ctx.shadowBlur = 12;
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+  ctx.restore();
+}
+function drawBullets(){ ctx.fillStyle='#fff'; bullets.forEach(b=>ctx.fillRect(b.x,b.y,b.w,b.h)); }
+function drawBlocks(){ blocks.forEach(b=>{ ctx.fillStyle=b.color; ctx.fillRect(b.x,b.y,b.w,b.h); }); }
+
+/* --- spawn --- */
+function spawnBlock(){
+  const bw = 60, bh = 30;
+  const x = Math.random() * (W - bw);
+  const color = `hsl(${Math.random()*360},80%,60%)`;
+  blocks.push({ x, y: -bh, w: bw, h: bh, color });
 }
 
-function shoot() {
-  bullets.push({ x: player.x + player.width/2 - 4, y: player.y - 16, width: 8, height: 16, speed: 10 });
+/* --- game logic --- */
+function shoot(){
+  bullets.push({ x: player.x + player.w/2 - 4, y: player.y - 18, w:8, h:16, speed: 10 });
 }
+function update(dt){
+  // movement
+  if(leftPress) player.x -= player.speed * dt * 60;
+  if(rightPress) player.x += player.speed * dt * 60;
+  player.x = clamp(player.x, 0, W - player.w);
 
-function update(dt) {
-  if (leftPressed) player.x -= player.speed * dt * 60;
-  if (rightPressed) player.x += player.speed * dt * 60;
-  player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-
+  // bullets
   bullets.forEach(b => b.y -= b.speed * dt * 60);
   bullets = bullets.filter(b => b.y > -20);
 
-  blocks.forEach(b => b.y += (2 + score * 0.02) * dt * 60);
-  blocks = blocks.filter(b => b.y < canvas.height + 50);
+  // blocks
+  blocks.forEach(b => b.y += (2 + score*0.02) * dt * 60);
+  blocks = blocks.filter(b => b.y < H + 50);
 
-  bullets.forEach((b, bi) => {
-    blocks.forEach((bl, blki) => {
-      if (b.x < bl.x + bl.width && b.x + b.width > bl.x && b.y < bl.y + bl.height && b.y + b.height > bl.y) {
-        bullets.splice(bi, 1);
-        blocks.splice(blki, 1);
+  // collisions
+  for(let i = bullets.length -1; i >=0; i--){
+    const b = bullets[i];
+    for(let j = blocks.length -1; j >=0; j--){
+      const bl = blocks[j];
+      if(b.x < bl.x + bl.w && b.x + b.w > bl.x && b.y < bl.y + bl.h && b.y + b.h > bl.y){
+        bullets.splice(i,1);
+        blocks.splice(j,1);
         score++;
-        scoreEl.textContent = "Score: " + score;
+        scoreEl.textContent = 'Score: ' + score;
+        break;
       }
-    });
-  });
-
-  if (blocks.some(b => b.y + b.height >= player.y && b.x < player.x + player.width && b.x + b.width > player.x)) {
-    endGame();
+    }
   }
 
+  // player hit?
+  for(const bl of blocks){
+    if(bl.y + bl.h >= player.y && bl.x < player.x + player.w && bl.x + bl.w > player.x){
+      endGame();
+      return;
+    }
+  }
+
+  // spawn rate
   spawnTimer += dt * 60;
-  if (spawnTimer > Math.max(60 - score, 20)) {
+  const spawnInterval = Math.max(60 - score, 18); // faster as score increases but not crazy
+  if(spawnTimer > spawnInterval){
     spawnBlock();
     spawnTimer = 0;
   }
 }
 
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#00eaff";
-  ctx.shadowColor = "#00eaff";
-  ctx.shadowBlur = 10;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = "#fff";
-  bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
-  blocks.forEach(b => {
-    ctx.fillStyle = b.color;
-    ctx.fillRect(b.x, b.y, b.width, b.height);
-  });
+function render(){
+  ctx.clearRect(0,0,W,H);
+  drawPlayer();
+  drawBullets();
+  drawBlocks();
 }
 
-function loop(timestamp) {
-  if (!gameActive) return;
-  const dt = (timestamp - lastTime) / 1000 || 0.016;
-  lastTime = timestamp;
+function loop(ts){
+  if(!running) return;
+  const dt = Math.min((ts - lastT)/1000, 0.05) || 0.016;
+  lastT = ts;
   update(dt);
-  draw();
+  render();
   requestAnimationFrame(loop);
 }
 
-function startGame() {
-  score = 0;
-  bullets = [];
-  blocks = [];
-  player.x = 175;
-  scoreEl.textContent = "Score: 0";
-  menu.classList.add("hidden");
-  gameOverScreen.classList.add("hidden");
-  gameActive = true;
-  enableTouchZones(true);
-  playMusic();
-  lastTime = performance.now();
+/* --- game control --- */
+function startGame(){
+  // start music after user interaction (browsers require gesture)
+  if(!musicMuted){ music.play().catch(()=>{}); musicBtn.textContent='🔊'; }
+  score = 0; bullets = []; blocks = []; spawnTimer = 0;
+  player.x = W/2 - player.w/2;
+  scoreEl.textContent = 'Score: 0';
+  menu.classList.add('hidden'); gameOver.classList.add('hidden');
+  running = true; lastT = performance.now();
   requestAnimationFrame(loop);
 }
-
-function endGame() {
-  gameActive = false;
-  enableTouchZones(false);
-  finalScoreEl.textContent = "Score: " + score;
-  gameOverScreen.classList.remove("hidden");
+function endGame(){
+  running = false;
+  finalScore.textContent = 'Score: ' + score;
+  gameOver.classList.remove('hidden');
+}
+function backToMenu(){
+  running = false;
+  menu.classList.remove('hidden');
+  gameOver.classList.add('hidden');
 }
 
-function backToMenu() {
-  gameActive = false;
-  enableTouchZones(false);
-  menu.classList.remove("hidden");
-  gameOverScreen.classList.add("hidden");
+/* --- keyboard controls (desktop) --- */
+document.addEventListener('keydown', e=>{
+  if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = true;
+  if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = true;
+  if((e.code==='KeyF' || e.code==='Space') && running) shoot();
+});
+document.addEventListener('keyup', e=>{
+  if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = false;
+  if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = false;
+});
+
+/* ====================
+   TOUCH: unified, reliable
+   - touchstart: record each touch
+   - touchmove: if moved far, treat as hold (left/right) by position
+   - touchend: if short tap (time < TAP_MAX and moved < MOVE_TOL) -> shoot
+   ==================== */
+const TAP_MAX = 300; // ms
+const MOVE_TOL = 16; // px to allow tiny drift before cancelling tap
+
+function getCanvasRect(){ return canvas.getBoundingClientRect(); }
+
+canvas.addEventListener('touchstart', function(e){
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    const id = t.identifier;
+    const rect = getCanvasRect();
+    const x = t.clientX - rect.left;
+    const y = t.clientY - rect.top;
+    // decide initial mode based on region:
+    // left 30% -> hold-left, right 30% -> hold-right, center -> candidate tap
+    const leftBound = rect.width * 0.30;
+    const rightBound = rect.width * 0.70;
+    let mode = 'tap';
+    if(x < leftBound) mode = 'hold-left';
+    else if(x > rightBound) mode = 'hold-right';
+    activeTouches[id] = { startX: x, startY: y, startT: Date.now(), mode, moved:false };
+    // immediately apply hold mode
+    if(mode === 'hold-left'){ leftPress = true; }
+    if(mode === 'hold-right'){ rightPress = true; }
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', function(e){
+  e.preventDefault();
+  const rect = getCanvasRect();
+  for(const t of e.changedTouches){
+    const id = t.identifier;
+    const info = activeTouches[id];
+    if(!info) continue;
+    const x = t.clientX - rect.left;
+    const dx = x - info.startX;
+    const dy = (t.clientY - rect.top) - info.startY;
+    if(Math.hypot(dx, dy) > MOVE_TOL){
+      info.moved = true;
+      // if it was a tap candidate but moved horizontally, convert to hold based on current x
+      const leftBound = rect.width * 0.30;
+      const rightBound = rect.width * 0.70;
+      if(x < leftBound){
+        info.mode = 'hold-left';
+        leftPress = true;
+        rightPress = false;
+      } else if(x > rightBound){
+        info.mode = 'hold-right';
+        rightPress = true;
+        leftPress = false;
+      } else {
+        // middle zone during drag: stop movement
+        leftPress = false; rightPress = false;
+      }
+    }
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', function(e){
+  e.preventDefault();
+  const rect = getCanvasRect();
+  for(const t of e.changedTouches){
+    const id = t.identifier;
+    const info = activeTouches[id];
+    if(!info) continue;
+    const x = t.clientX - rect.left;
+    const dt = Date.now() - info.startT;
+    const moved = info.moved;
+    // if short and not moved -> consider as tap -> shoot
+    if(info.mode === 'tap' && dt <= TAP_MAX && !moved && running){
+      shoot();
+    }
+    // clean up press flags for hold modes
+    if(info.mode === 'hold-left') leftPress = false;
+    if(info.mode === 'hold-right') rightPress = false;
+    delete activeTouches[id];
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchcancel', function(e){
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    const id = t.identifier;
+    const info = activeTouches[id];
+    if(info){
+      if(info.mode === 'hold-left') leftPress = false;
+      if(info.mode === 'hold-right') rightPress = false;
+      delete activeTouches[id];
+    }
+  }
+}, { passive: false });
+
+/* --- buttons --- */
+playBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+menuBtn.addEventListener('click', backToMenu);
+exitBtns.forEach(b => b.addEventListener('click', ()=> location.href = 'index.html'));
+
+/* --- resize handling (keeps canvas internal resolution stable) --- */
+function resizeCanvas(){
+  // keep internal resolution fixed (400x600) but scale by CSS; we already set canvas width/height attributes
+  // Keep W,H consistent with drawing coordinates:
+  const rect = canvas.getBoundingClientRect();
+  // We keep logical coords as 400x600 for predictable gameplay; CSS scales it visually.
+  // If you want higher DPI, uncomment the DPR scaling block below.
+  // const dpr = window.devicePixelRatio || 1;
+  // canvas.width = 400 * dpr; canvas.height = 600 * dpr; ctx.scale(dpr,dpr);
 }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-function enableTouchZones(enable) {
-  const state = enable ? "auto" : "none";
-  leftZone.style.pointerEvents = state;
-  rightZone.style.pointerEvents = state;
-}
-
-// Controls
-document.addEventListener("keydown", e => {
-  if (e.code === "KeyA") leftPressed = true;
-  if (e.code === "KeyD") rightPressed = true;
-  if ((e.code === "KeyF" || e.code === "Space") && gameActive) shoot();
-});
-document.addEventListener("keyup", e => {
-  if (e.code === "KeyA") leftPressed = false;
-  if (e.code === "KeyD") rightPressed = false;
-});
-
-// Touch controls
-[leftZone, rightZone, canvas].forEach(zone => {
-  zone.addEventListener("touchstart", e => e.preventDefault(), { passive: false });
-});
-leftZone.addEventListener("touchstart", e => { e.preventDefault(); leftPressed = true; });
-leftZone.addEventListener("touchend", e => { e.preventDefault(); leftPressed = false; });
-rightZone.addEventListener("touchstart", e => { e.preventDefault(); rightPressed = true; });
-rightZone.addEventListener("touchend", e => { e.preventDefault(); rightPressed = false; });
-canvas.addEventListener("touchstart", e => { e.preventDefault(); if (gameActive) shoot(); });
-
-// Buttons
-playBtn.onclick = startGame;
-restartBtn.onclick = startGame;
-menuBtn.onclick = backToMenu;
-exitBtns.forEach(btn => btn.onclick = () => window.location.href = "index.html");
+/* initial message */
+scoreEl.textContent = 'Score: 0';
 </script>
 </body>
 </html>
