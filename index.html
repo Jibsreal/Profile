@@ -108,6 +108,7 @@
 
                     let pendingTimer = null;
                     let pressCount = 0;
+                    let secretCooldown = false; // cooldown flag for secret image
 
                     function nextImage() {
                         currentIndex = (currentIndex + 1) % images.length;
@@ -138,6 +139,12 @@
                             if (avatarDiv) avatarDiv.removeEventListener('keydown', handleKeydown);
                             return;
                         }
+
+                        // normal behavior: immediate change and schedule a second change
+                        nextImage();
+                        if (pendingTimer) clearTimeout(pendingTimer);
+                        pendingTimer = setTimeout(nextImage, 1700);
+                    }
 
                     // click anywhere on the card (including the image) to switch and schedule another change
                     profileCard.addEventListener('click', triggerChange);
