@@ -122,22 +122,22 @@
                     }
 
                     function triggerChange() {
+                        if (secretCooldown) return; // prevent triggering if in cooldown
                         pressCount++;
                         // If pressed more than 10 times, reveal the secret GIF and stop further changes
                         if (pressCount > 10) {
                             if (pendingTimer) { clearTimeout(pendingTimer); pendingTimer = null; }
                             avatarImg.src = secretGif;
+                            secretCooldown = true; // set cooldown for secret image
+                            setTimeout(() => {
+                                secretCooldown = false; // reset cooldown after 3 seconds
+                                avatarImg.src = images[1]; // change back to the second GIF
+                            }, 3000);
                             // disable further interaction to keep the secret revealed
                             profileCard.removeEventListener('click', triggerChange);
                             if (avatarDiv) avatarDiv.removeEventListener('keydown', handleKeydown);
                             return;
                         }
-
-                        // normal behavior: immediate change and schedule a second change
-                        nextImage();
-                        if (pendingTimer) clearTimeout(pendingTimer);
-                        pendingTimer = setTimeout(nextImage, 1700);
-                    }
 
                     // click anywhere on the card (including the image) to switch and schedule another change
                     profileCard.addEventListener('click', triggerChange);
