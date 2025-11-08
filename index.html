@@ -103,22 +103,35 @@
 
                     const avatarImg = document.getElementById('avatarImage');
                     const profileCard = document.getElementById('profileCard');
+                    const avatarDiv = profileCard.querySelector('.avatar');
+
+                    let pendingTimer = null;
 
                     function nextImage() {
                         currentIndex = (currentIndex + 1) % images.length;
                         avatarImg.src = images[currentIndex];
                     }
 
-                    // click anywhere on the card (including the image) to switch
-                    profileCard.addEventListener('click', nextImage);
+                    function triggerChange() {
+                        // immediate change
+                        nextImage();
+                        // schedule a second change after 2 seconds, clearing any previous timer
+                        if (pendingTimer) clearTimeout(pendingTimer);
+                        pendingTimer = setTimeout(nextImage, 1700);
+                    }
 
-                    // keyboard accessibility: Enter or Space toggles the image
-                    avatarImg.addEventListener('keydown', function(e){
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            nextImage();
-                        }
-                    });
+                    // click anywhere on the card (including the image) to switch and schedule another change
+                    profileCard.addEventListener('click', triggerChange);
+
+                    // keyboard accessibility: Enter or Space toggles the image (on the avatar div which is focusable)
+                    if (avatarDiv) {
+                        avatarDiv.addEventListener('keydown', function(e){
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                triggerChange();
+                            }
+                        });
+                    }
                 </script>
                 <div class="meta">
                     <h1>M. Jibreen</h1>
