@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Math Games ⚡</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Inter:wght@400;600&display=swap');
+
+    :root{
+      --bg: radial-gradient(circle at 30% 20%, #0b1220 0%, #040a14 100%);
+      --accent: #00eaff;
+      --accent2: #4ade80;
+      --text: #eaf4ff;
+      --muted: #8ba3c4;
+      --warning: #f87171;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;
+    }
+    .card{
+      background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border-radius:20px;padding:32px;max-width:780px;width:100%;box-shadow:0 0 40px rgba(0,234,255,0.15);
+      animation: float 5s ease-in-out infinite;
+    }
+    @keyframes float{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-5px)}
+    }
+    h1{font-family:'Orbitron',sans-serif;font-size:28px;margin:0 0 10px;text-align:center;color:var(--accent)}
+    p.lead{text-align:center;color:var(--muted);margin-bottom:22px}
+    .row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+    select,input[type=number]{background:rgba(255,255,255,0.1);color:var(--text);border:1px solid rgba(255,255,255,0.1);padding:8px 12px;border-radius:10px;}
+    input[type=number]:focus,select:focus{outline:none;border-color:var(--accent)}
+    .question{font-size:36px;margin:20px 0;text-align:center;font-family:'Orbitron',sans-serif;letter-spacing:1px}
+    button{
+      background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;padding:10px 18px;border-radius:12px;font-weight:700;cursor:pointer;color:#011316;transition:transform .2s, box-shadow .2s;
+    }
+    button:hover{transform:translateY(-2px);box-shadow:0 0 15px rgba(0,234,255,0.4)}
+    .status{text-align:center;margin-top:14px;font-size:16px}
+    .hint{text-align:center;margin-top:10px;font-size:14px;color:#b2faff}
+    .scoreboard{display:flex;justify-content:space-between;margin-top:16px;align-items:center;flex-wrap:wrap}
+    .score{background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:10px;font-family:'Orbitron',sans-serif;margin:4px 0}
+    .progress-bar{height:8px;background:rgba(255,255,255,0.1);border-radius:5px;margin-top:14px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.4s ease}
+    .timer{background:rgba(255,255,255,0.1);height:14px;border-radius:8px;overflow:hidden;margin-top:12px;position:relative;}
+    .timer-fill{background:linear-gradient(90deg,var(--accent2),var(--accent));height:100%;width:100%;transition:width 1s linear;}
+    .timer-text{position:absolute;top:-28px;right:0;font-family:'Orbitron',sans-serif;font-size:14px;color:var(--accent);}
+    .confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;}
+    .particle{position:absolute;width:8px;height:8px;background:var(--accent);border-radius:50%;animation: fall 2s linear forwards}
+    @keyframes fall{to{transform:translateY(100vh) rotate(720deg);opacity:0}}
+  </style>
+</head>
+<body>
+  <div class="card" role="application">
+    <h1>⚡ Math Games ⚡</h1>
+    <p class="lead">Beat the timer and level up your brain with glowing math challenges!</p>
+
+    <div class="row">
+      <label for="mode">Mode:</label>
+      <select id="mode">
+        <option value="mixed">Mixed (+ − × ÷)</option>
+        <option value="add">Addition</option>
+        <option value="sub">Subtraction</option>
+        <option value="mul">Multiplication</option>
+        <option value="div">Division</option>
+      </select>
+
+      <label for="count">Questions:</label>
+      <input id="count" type="number" min="1" max="30" value="10">
+
+      <label for="startDiff">Start difficulty:</label>
+      <select id="startDiff">
+        <option value="1">1 (Easy)</option>
+        <option value="3">3 (Medium)</option>
+        <option value="5">5 (Hard)</option>
+      </select>
+
+      <label for="timer">Time (sec):</label>
+      <input id="timerValue" type="number" min="5" max="60" value="15" style="width:70px">
+    </div>
+
+    <div class="question" id="question">Press Start to Begin</div>
+
+    <div class="row">
+      <input id="answer" type="number" placeholder="Your answer" inputmode="numeric">
+      <button id="start">Start</button>
+      <button id="submit" disabled>Submit</button>
+      <button id="skip" disabled>Skip</button>
+    </div>
+
+    <div class="timer"><div class="timer-fill" id="timerFill"></div><div class="timer-text" id="timerText">00s</div></div>
+
+    <div class="status" id="status"></div>
+    <div class="hint" id="hint"></div>
+
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+    <div class="scoreboard">
+      <div class="score" id="scoreDisplay">Score: 0 / 0</div>
+      <div id="difficultyDisplay" class="score">Difficulty: 1</div>
+    </div>
+  </div>
+
+  <div class="confetti" id="confetti"></div>
+
+  <script>
+    const state={score:0,total:0,asked:0,qCount:10,difficulty:1,mode:'mixed',current:null,timer:null,timeLeft:15};
+    const el=id=>document.getElementById(id);
+    const questionEl=el('question'),statusEl=el('status'),hintEl=el('hint'),scoreEl=el('scoreDisplay'),diffEl=el('difficultyDisplay'),progressEl=el('progress'),timerFill=el('timerFill'),timerText=el('timerText');
+
+    function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+    function makeOperands(d){
+      const ranges={1:[1,9],2:[5,20],3:[12,60],4:[30,200],5:[100,800]};
+      const [lo,hi]=ranges[Math.max(1,Math.min(5,d))];
+      return [rand(lo,hi),rand(lo,hi)];
+    }
+
+    function generate(){
+      const ops=['+','-','*','/'];
+      const m=state.mode==='mixed'?ops[rand(0,3)]:state.mode==='add'?'+':state.mode==='sub'?'-':state.mode==='mul'?'*':'/';
+      let [a,b]=makeOperands(state.difficulty);
+
+      if(m==='-'){if(b>a)[a,b]=[b,a];}
+      if(m==='/'){
+        b=rand(1,Math.max(1,Math.floor(b/2)));
+        a=a*b; // ensures division gives integer result
+      }
+
+      const correct=Number(eval(`${a}${m}${b}`));
+      return {a,b,op:m,q:`${a} ${m} ${b} = ?`,correct:isNaN(correct)?0:correct};
+    }
+
+    function update(){
+      scoreEl.textContent=`Score: ${state.score} / ${state.total}`;
+      diffEl.textContent=`Difficulty: ${state.difficulty}`;
+      progressEl.style.width=`${(state.asked/state.qCount)*100}%`;
+    }
+
+    function startTimer(){
+      clearInterval(state.timer);
+      state.timeLeft=parseInt(el('timerValue').value)||15;
+      timerText.textContent=`${state.timeLeft}s`;
+      timerFill.style.width='100%';
+      timerFill.style.background='linear-gradient(90deg,var(--accent2),var(--accent))';
+      state.timer=setInterval(()=>{
+        state.timeLeft--;
+        timerText.textContent=`${state.timeLeft}s`;
+        timerFill.style.width=`${(state.timeLeft/parseInt(el('timerValue').value))*100}%`;
+        if(state.timeLeft<=3){timerFill.style.background='linear-gradient(90deg,var(--warning),#ff0000)'}
+        if(state.timeLeft<=0){clearInterval(state.timer);statusEl.textContent='⏰ Time up!';skip();}
+      },1000);
+    }
+
+    function next(){
+      if(state.asked>=state.qCount){
+        questionEl.textContent=`🏁 Quest Complete! Final Score: ${state.score}/${state.total}`;
+        el('submit').disabled=true;el('skip').disabled=true;
+        celebrate();clearInterval(state.timer);
+        return;
+      }
+      state.current=generate();
+      if(!state.current||isNaN(state.current.correct)){
+        state.current={a:0,b:0,op:'+',correct:0,q:'Error generating question'};
+      }
+      questionEl.textContent=`Q${state.asked+1}: ${state.current.q}`;
+      state.asked++;
+      el('answer').value='';
+      el('answer').focus();
+      update();
+      startTimer();
+    }
+
+    function celebrate(){
+      for(let i=0;i<40;i++){
+        const p=document.createElement('div');
+        p.className='particle';
+        p.style.left=rand(0,100)+'%';
+        p.style.background=`hsl(${rand(150,250)},100%,70%)`;
+        el('confetti').appendChild(p);
+        setTimeout(()=>p.remove(),2000);
+      }
+    }
+
+    function submit(){
+      if(!state.current){statusEl.textContent='No question yet! Press Start.';return;}
+      const val=el('answer').value.trim();
+      if(val===''){statusEl.textContent='Enter an answer or skip.';return;}
+      const ans=Number(val),c=Number(state.current.correct);
+      if(isNaN(ans)||isNaN(c)){statusEl.textContent='Invalid input!';return;}
+      state.total++;
+      clearInterval(state.timer);
+      if(ans===c){
+        state.score++;
+        statusEl.textContent='🔥 Correct! Level up!';
+        state.difficulty=Math.min(5,state.difficulty+1);
+        celebrate();
+      }else{
+        statusEl.textContent=`❌ Wrong! Correct: ${c}`;
+        state.difficulty=Math.max(1,state.difficulty-1);
+      }
+      hintEl.textContent=`${state.current.a} ${state.current.op} ${state.current.b} = ${c}`;
+      update();
+      setTimeout(next,1000);
+    }
+
+    function skip(){
+      if(!state.current){statusEl.textContent='No question to skip!';return;}
+      state.total++;
+      clearInterval(state.timer);
+      statusEl.textContent='⏭ Skipped! Try again next time.';
+      state.difficulty=Math.max(1,state.difficulty-1);
+      update();
+      setTimeout(next,800);
+    }
+
+    function start(){
+      state.qCount=parseInt(el('count').value)||10;
+      state.difficulty=parseInt(el('startDiff').value)||1;
+      state.mode=el('mode').value;
+      state.score=0;state.total=0;state.asked=0;state.current=null;
+      statusEl.textContent='';hintEl.textContent='';
+      el('submit').disabled=false;el('skip').disabled=false;
+      next();
+    }
+
+    el('start').onclick=start;
+    el('submit').onclick=submit;
+    el('skip').onclick=skip;
+    el('answer').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
+    update();
+  </script>
+</body>
+</html>
