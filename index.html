@@ -1,341 +1,231 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Profile — By Jibs</title>
-    <meta name="description" content="Personal profile / resume. Replace placeholders with your details." />
-    <style>
-        :root{
-            --bg:#0f1724; --card:#0b1220; --muted:#9aa7bd; --accent:#7c5cff;
-            --glass: rgba(255,255,255,0.04);
-            --radius:12px; font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-        }
-        *{box-sizing:border-box}
-        html,body{height:100%}
-        body{
-            margin:0; background:linear-gradient(180deg,#061021 0%, #071529 60%);
-            color:#e6eef8; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-            padding:32px;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Profile — By Jibs</title>
+<meta name="description" content="Personal profile / resume. Replace placeholders with your details." />
+<style>
+:root{
+  --bg:#0f1724; --card:#0b1220; --muted:#9aa7bd; --accent:#7c5cff;
+  --glass: rgba(255,255,255,0.04);
+  --radius:12px; font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:linear-gradient(180deg,#061021 0%, #071529 60%);
+  color:#e6eef8; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  padding:32px;
+}
 
-        .wrap{max-width:980px;margin:0 auto;padding:24px; display:grid; grid-template-columns: 320px 1fr; gap:24px;}
-        @media (max-width:880px){ .wrap{grid-template-columns:1fr; padding:16px;} }
+.wrap{max-width:980px;margin:0 auto;padding:24px; display:grid; grid-template-columns: 320px 1fr; gap:24px;}
+@media (max-width:880px){ .wrap{grid-template-columns:1fr; padding:16px;} }
 
-        .card{
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-            border-radius: var(--radius); padding:20px; box-shadow: 0 6px 18px rgba(2,6,23,0.6);
-            border:1px solid rgba(255,255,255,0.03);
-        }
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: var(--radius); padding:20px; box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+  border:1px solid rgba(255,255,255,0.03);
+}
 
-        /* LEFT COLUMN */
-        .profile{
-            display:flex; gap:16px; align-items:center;
-            background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
-            padding:18px;border-radius:12px;
-        }
-        .avatar{
-            width:88px;height:88px;border-radius:14px;flex:0 0 88px;
-            display:grid;place-items:center;font-weight:700;font-size:28px;color:white;
-            background:linear-gradient(135deg,var(--accent),#2ad1d1);
-            box-shadow:0 6px 18px rgba(124,92,255,0.18), inset 0 -6px 18px rgba(255,255,255,0.02);
-        }
-        .meta h1{margin:0;font-size:20px}
-        .meta p{margin:6px 0 0;color:var(--muted);font-size:13px}
+/* LEFT COLUMN */
+.profile{
+  display:flex; gap:16px; align-items:center;
+  background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+  padding:18px;border-radius:12px;
+}
+.avatar{
+  width:88px;height:88px;border-radius:14px;flex:0 0 88px;
+  display:grid;place-items:center;font-weight:700;font-size:28px;color:white;
+  background:linear-gradient(135deg,var(--accent),#2ad1d1);
+  box-shadow:0 6px 18px rgba(124,92,255,0.18), inset 0 -6px 18px rgba(255,255,255,0.02);
+}
+.meta h1{margin:0;font-size:20px}
+.meta p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
-        .bio{margin-top:14px;color:var(--muted);line-height:1.5;font-size:14px}
-        .tag{display:inline-block;margin-right:6px;margin-top:10px;padding:6px 8px;background:var(--glass);border-radius:999px;color:var(--muted);font-size:12px}
+.bio{margin-top:14px;color:var(--muted);line-height:1.5;font-size:14px}
+.tag{display:inline-block;margin-right:6px;margin-top:10px;padding:6px 8px;background:var(--glass);border-radius:999px;color:var(--muted);font-size:12px}
 
-        .skills{margin-top:14px}
-        .skill{margin-bottom:12px}
-        .skill label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
-        .bar{
-            height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;
-        }
-        .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#2ad1d1);width:0%;transition:width 900ms cubic-bezier(.2,.9,.3,1)}
+.skills{margin-top:14px; position:relative;}
+.skill{margin-bottom:12px;position:relative;}
+.skill label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+.bar{
+  height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;
+}
+.bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#2ad1d1);width:0%;transition:width 900ms cubic-bezier(.2,.9,.3,1)}
+.skill:hover .bar > i{
+  filter:brightness(1.3);
+  box-shadow:0 0 8px rgba(124,92,255,0.4);
+}
 
-        .contact{margin-top:18px;display:flex;flex-direction:column;gap:8px}
-        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;background:transparent;border:1px solid rgba(255,255,255,0.06);border-radius:10px;color:var(--muted);text-decoration:none;font-size:13px}
-        .btn.primary{background:linear-gradient(90deg,var(--accent),#2ad1d1);color:white;border:none; box-shadow:0 6px 18px rgba(124,92,255,0.12)}
+/* Tooltip for skill info */
+.tooltip {
+  position: absolute;
+  background: var(--card);
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateY(6px);
+  max-width: 240px;
+  line-height: 1.4;
+  z-index: 999;
+}
+.tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
 
-        /* RIGHT COLUMN */
-        .right-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-        .right-head h2{margin:0}
-        .tagline{color:var(--muted);margin-top:6px;font-size:14px}
+/* RIGHT COLUMN */
+.right-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.right-head h2{margin:0}
+.tagline{color:var(--muted);margin-top:6px;font-size:14px}
 
-        .section{margin-top:18px}
-        .section h3{margin:0 0 12px 0;font-size:15px}
-        .timeline{display:flex;flex-direction:column;gap:12px}
-        .job{background:var(--glass);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
-        .job .row{display:flex;justify-content:space-between;align-items:center}
-        .job .title{font-weight:600}
-        .small{font-size:13px;color:var(--muted)}
+.section{margin-top:18px}
+.section h3{margin:0 0 12px 0;font-size:15px}
+.timeline{display:flex;flex-direction:column;gap:12px}
+.job{background:var(--glass);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+.job .row{display:flex;justify-content:space-between;align-items:center}
+.job .title{font-weight:600}
+.small{font-size:13px;color:var(--muted)}
 
-        .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-        @media (max-width:560px){ .grid{grid-template-columns:1fr} }
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (max-width:560px){ .grid{grid-template-columns:1fr} }
 
-        .project{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
-        .project h4{margin:0 0 6px 0}
-        .project p{margin:0;color:var(--muted);font-size:13px}
+.project{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+.project h4{margin:0 0 6px 0}
+.project p{margin:0;color:var(--muted);font-size:13px}
 
-        /* contact form */
-        form{display:grid;gap:10px}
-        input,textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:inherit;font-size:14px}
-        textarea{min-height:100px;resize:vertical}
-        .muted{color:var(--muted);font-size:13px}
-        footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
-    </style>
+footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+</style>
 </head>
 <body>
-    <main class="wrap">
-        <!-- LEFT COLUMN -->
-        <aside>
-           <div class="card profile" id="profileCard">
-                <div class="avatar" aria-hidden="false" role="button" tabindex="0" style="cursor:pointer">
-                    <img id="avatarImage" src="https://media.tenor.com/prn7gJhr5xgAAAAj/kirby-headphones.gif" alt="Kibal avatar" style="width:100%;height:100%;border-radius:12px;object-fit:cover;display:block" />
-                </div>
-                <script>
-                    const images = [
-                        "https://i.pinimg.com/originals/c1/97/e1/c197e1fc5e0178579c3ef6e98fb33ab1.gif",
-                        "https://media.tenor.com/prn7gJhr5xgAAAAj/kirby-headphones.gif"
-                    ];
-                    const secretGif = "https://media1.tenor.com/m/2EVga7MfSRsAAAAd/kirby-falling.gif"; // replace with your secret GIF URL
-                    let currentIndex = 1; // start matching the initial src
+<main class="wrap">
+  <!-- LEFT COLUMN -->
+  <aside>
+    <div class="card profile" id="profileCard">
+      <div class="avatar" aria-hidden="false" role="button" tabindex="0" style="cursor:pointer">
+        <img id="avatarImage" src="https://media.tenor.com/prn7gJhr5xgAAAAj/kirby-headphones.gif" alt="Kibal avatar" style="width:100%;height:100%;border-radius:12px;object-fit:cover;display:block" />
+      </div>
+      <div class="meta">
+        <h1>M. Jibreen</h1>
+        <p class="muted">Beginner Developer :)</p>
+        <div class="tagline muted">#Ilovecodesomething</div>
+      </div>
+    </div>
 
-                    const avatarImg = document.getElementById('avatarImage');
-                    const profileCard = document.getElementById('profileCard');
-                    const avatarDiv = profileCard.querySelector('.avatar');
+    <div class="card bio" style="margin-top:14px">
+      <strong>About</strong>
+      <p class="muted" style="margin-top:8px">
+        Hi! I'm a young developer deeply interested in coding and exploring new programming languages and web development tools. I love creating beautiful, functional web apps and Python projects :D
+      </p>
 
-                    let pendingTimer = null;
-                    let pressCount = 0;
-                    let secretCooldown = false; // cooldown flag for secret image
-
-                    function nextImage() {
-                        currentIndex = (currentIndex + 1) % images.length;
-                        avatarImg.src = images[currentIndex];
-                    }
-
-                    function handleKeydown(e){
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            triggerChange();
-                        }
-                    }
-
-                    function triggerChange() {
-                        if (secretCooldown) return; // prevent triggering if in cooldown
-                        pressCount++;
-                        // If pressed more than 10 times, reveal the secret GIF and stop further changes
-                        if (pressCount > 10) {
-                            if (pendingTimer) { clearTimeout(pendingTimer); pendingTimer = null; }
-                            avatarImg.src = secretGif;
-                            secretCooldown = true; // set cooldown for secret image
-                            setTimeout(() => {
-                                secretCooldown = false; // reset cooldown after 3 seconds
-                                avatarImg.src = images[1]; // change back to the second GIF
-                            }, 3000);
-                            // disable further interaction to keep the secret revealed
-                            profileCard.removeEventListener('click', triggerChange);
-                            if (avatarDiv) avatarDiv.removeEventListener('keydown', handleKeydown);
-                            return;
-                        }
-
-                        // normal behavior: immediate change and schedule a second change
-                        nextImage();
-                        if (pendingTimer) clearTimeout(pendingTimer);
-                        pendingTimer = setTimeout(nextImage, 1700);
-                    }
-
-                    // click anywhere on the card (including the image) to switch and schedule another change
-                    profileCard.addEventListener('click', triggerChange);
-
-                    // keyboard accessibility: Enter or Space toggles the image (on the avatar div which is focusable)
-                    if (avatarDiv) {
-                        avatarDiv.addEventListener('keydown', handleKeydown);
-                    }
-                </script>
-                <div class="meta">
-                    <h1>M. Jibreen</h1>
-                    <p class="muted">Begineer Developer :)</p>
-                    <div class="tagline muted">#Ilovecodesomething</div>
-                </div>
-            </div>
-
-            <div class="card bio" style="margin-top:14px">
-                <strong>About</strong>
-                <p class="muted" style="margin-top:8px">
-                    HI! i am young developer that are very interested in coding and learning new things about programming languages and web development. I love to create beautiful and functional web applications also python projects :D.
-                </p>
-
-                <div class="skills">
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                        <strong>Skills</strong>
-                        <span class="muted">proficiency</span>
-                    </div>
-
-                    <div class="skill" data-percent="91">
-                        <label>HTML & CSS <span class="muted">91%</span></label>
-                        <div class="bar"><i></i></div>
-                    </div>
-                    <div class="skill" data-percent="87">
-                        <label>Python <span class="muted">87%</span></label>
-                        <div class="bar"><i></i></div>
-                    </div>
-                    <div class="skill" data-percent="67">
-                        <label>JavaScripts<span class="muted">67%</span></label>
-                        <div class="bar"><i></i></div>
-                    </div>
-                </div>
-
-                <div class="contact" style="margin-top:14px">
-                </div>
-            </div>
-
-            <div class="card" style="margin-top:14px">
-                <strong>Quick info</strong>
-                <div style="margin-top:8px" class="muted">
-                    <div><strong>Availability:</strong> Busy ;-;</div>
-                    <div><strong>Languages:</strong> English, Indonesia, France</div>
-                    <div><strong>Education:</strong> Middle Schools </div>
-                    <div><strong>Hobbies:</strong> Coding, Games, Chess </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- RIGHT COLUMN -->
-        <section>
-            <div class="card">
-                <div class="right-head">
-                    <div>
-                        <h2>Jibs :D</h2>
-                        <div class="tagline muted">Begineer Developer building imaginary of things.</div>
-                    </div>
-                    <div style="text-align:right">
-                        <div class="muted">Experience: 2+ yrs</div>
-                        <div class="muted">Location: Somewhere in Indonesia</div>
-                    </div>
-                </div>
-                <div class="section">
-                    <h3>Memory projects</h3>
-                    <div class="grid">
-
-    <!-- Shooter Game Project -->
-    <div class="project fade-in">
-        <h4>Shooter Game</h4>
-        <p class="muted">A fun browser shooter made with HTML, CSS, and JavaScript.</p>
-
-        <div style="
-            position:relative;
-            padding-top:56.25%;
-            border-radius:10px;
-            overflow:hidden;
-            margin-top:8px;
-            box-shadow:0 4px 12px rgba(0,0,0,0.3);
-            border:1px solid rgba(255,255,255,0.05);
-            opacity:0;
-            transform:translateY(15px);
-            animation: fadeIn 1.5s ease forwards;
-        ">
-            <iframe 
-                src="Shooter.html"
-                title="Shooter Game Preview"
-                style="
-                    position:absolute;
-                    top:0;left:0;
-                    width:100%;height:100%;
-                    border:0;
-                    border-radius:10px;
-                "
-                allowfullscreen
-            ></iframe>
+      <div class="skills">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Skills</strong>
+          <span class="muted">proficiency</span>
         </div>
 
-        <a href="Shooter.html" class="btn primary" style="margin-top:12px;display:inline-block;text-align:center;">
-            ▶ Play Full Game
-        </a>
-        <p class="muted">Disclaimer: still alot of bugs! sorry 😔</p>
-    </div>
-
-    <div class="project fade-in">
-        <h4>Math Games</h4>
-        <p class="muted">A fun browser Math Games made with HTML and CSS</p>
-
-        <div style="
-            position:relative;
-            padding-top:56.25%;
-            border-radius:10px;
-            overflow:hidden;
-            margin-top:8px;
-            box-shadow:0 4px 12px rgba(0,0,0,0.3);
-            border:1px solid rgba(255,255,255,0.05);
-            opacity:0;
-            transform:translateY(15px);
-            animation: fadeIn 1.5s ease forwards;
-        ">
-            <iframe 
-                src="Math.html"
-                title="Math Game Preview"
-                style="
-                    position:absolute;
-                    top:0;left:0;
-                    width:100%;height:100%;
-                    border:0;
-                    border-radius:10px;
-                "
-                allowfullscreen
-            ></iframe>
+        <div class="skill" data-percent="91" data-info="Mastering responsive layouts, flexbox, grid, and animation.">
+          <label>HTML & CSS <span class="muted">91%</span></label>
+          <div class="bar"><i></i></div>
         </div>
 
-        <a href="Math.html" class="btn primary" style="margin-top:12px;display:inline-block;text-align:center;">
-            ▶ Play Full Game
-        </a>
-        <p class="muted">Disclaimer:(still work in progress)</p>
+        <div class="skill" data-percent="87" data-info="Writing automation scripts, using libraries, exploring AI APIs.">
+          <label>Python <span class="muted">87%</span></label>
+          <div class="bar"><i></i></div>
+        </div>
+
+        <div class="skill" data-percent="67" data-info="Building dynamic UIs, learning DOM manipulation and events.">
+          <label>JavaScript <span class="muted">67%</span></label>
+          <div class="bar"><i></i></div>
+        </div>
+
+      </div>
     </div>
 
-    <!-- Coming Soon Project -->
-    <div class="project fade-in" style="animation-delay:0.4s;">
-        <h4>???</h4>
-        <p class="muted">Coming Soon.</p>
+    <div class="card" style="margin-top:14px">
+      <strong>Quick info</strong>
+      <div style="margin-top:8px" class="muted">
+        <div><strong>Availability:</strong> Busy ;-;</div>
+        <div><strong>Languages:</strong> English, Indonesia, France</div>
+        <div><strong>Education:</strong> Middle School</div>
+        <div><strong>Hobbies:</strong> Coding, Games, Chess</div>
+      </div>
     </div>
+  </aside>
 
-                </div>
-            <footer>
-                Made by jibs😀😋 | &copy; 2025 Jibs
-            </footer>
-        </section>
-    </main>
+  <!-- RIGHT COLUMN -->
+  <section>
+    <div class="card">
+      <div class="right-head">
+        <div>
+          <h2>Jibs :D</h2>
+          <div class="tagline muted">Beginner Developer building imaginary things.</div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted">Experience: 2+ yrs</div>
+          <div class="muted">Location: Somewhere in Indonesia</div>
+        </div>
+      </div>
 
-    <script>
-        // Animate skill bars on load
-        document.addEventListener('DOMContentLoaded', function(){
-            document.querySelectorAll('.skill').forEach(function(el, i){
-                var pct = el.getAttribute('data-percent') || 60;
-                setTimeout(function(){
-                    el.querySelector('i').style.width = pct + '%';
-                }, 150 + i*120);
-            });
+      <div class="section">
+        <h3>Memory projects</h3>
+        <div class="grid">
+          <div class="project">
+            <h4>Shooter Game</h4>
+            <p class="muted">A fun browser shooter made with HTML, CSS, and JavaScript.</p>
+          </div>
+          <div class="project">
+            <h4>Math Games</h4>
+            <p class="muted">A browser-based math game made with HTML and CSS.</p>
+          </div>
+          <div class="project">
+            <h4>???</h4>
+            <p class="muted">Coming Soon.</p>
+          </div>
+        </div>
+      </div>
+      <footer>
+        Made by jibs😀😋 | &copy; 2025 Jibs
+      </footer>
+    </div>
+  </section>
+</main>
 
-            // Contact form behaviour (client-side only)
-            var form = document.getElementById('contactForm');
-            var status = document.getElementById('formStatus');
-            form.addEventListener('submit', function(e){
-                e.preventDefault();
-                status.textContent = 'Sending...';
-                // Simulate send
-                setTimeout(function(){
-                    status.textContent = 'Thanks — your message was received (this is a demo).';
-                    form.reset();
-                }, 900);
-            });
-            document.getElementById('clearBtn').addEventListener('click', function(){ form.reset(); status.textContent = ''; });
+<!-- Tooltip element -->
+<div id="skillTooltip" class="tooltip"></div>
 
-            // CV download placeholder (replace href with actual resume file path)
-            document.getElementById('downloadCv').addEventListener('click', function(e){
-                // In production, set link to actual resume PDF; this demo prevents navigation.
-                e.preventDefault();
-                alert('Replace this with a link to your CV (e.g., /assets/your-cv.pdf).');
-            });
-        });
-    </script>
+<script>
+// Animate skill bars
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.skill').forEach(function(el, i){
+    var pct = el.getAttribute('data-percent') || 60;
+    setTimeout(function(){
+      el.querySelector('i').style.width = pct + '%';
+    }, 150 + i*120);
+  });
+});
+
+// Tooltip interactivity
+const tooltip = document.getElementById('skillTooltip');
+document.querySelectorAll('.skill').forEach(skill => {
+  skill.addEventListener('mousemove', e => {
+    const info = skill.getAttribute('data-info');
+    tooltip.textContent = info;
+    tooltip.classList.add('show');
+    tooltip.style.left = e.pageX + 15 + 'px';
+    tooltip.style.top = e.pageY + 10 + 'px';
+  });
+  skill.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('show');
+  });
+});
+</script>
 </body>
-</html></div>
+</html>
