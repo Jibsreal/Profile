@@ -47,7 +47,7 @@
 
     <div id="menu" class="overlay">
       <h1>Neon Block Shooter</h1>
-      <p>Tap center to shoot. Hold left/right of the screen to move.<br>Keyboard: A / D to move, F or Space to shoot.</p>
+      <p>Tap center to shoot. Hold left/right of the screen to move.<br>Keyboard: A / D to move, F to shoot.</p>
       <div class="menu-buttons">
         <button id="play-btn">Start Game</button>
         <button id="exit-btn" class="secondary">Return to Profile</button>
@@ -230,7 +230,7 @@ function backToMenu(){
 document.addEventListener('keydown', e=>{
   if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = true;
   if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = true;
-  if((e.code==='KeyF' || e.code==='Space') && running) shoot();
+  if((e.code==='KeyF') && running) shoot();
 });
 document.addEventListener('keyup', e=>{
   if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = false;
