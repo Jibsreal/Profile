@@ -49,7 +49,7 @@
 
     <div id="menu" class="overlay">
       <h1>Neon Block Shooter</h1>
-      <p>Tap center to shoot. Hold left/right of the screen to move.<br>Keyboard: A / D to move, F to shoot.</p>
+      <p>Tap center to shoot. Hold left/right of the screen to move.<br>Keyboard: A / D to move, SPACE to shoot.</p>
       <div class="menu-buttons">
         <button id="play-btn">Start Game</button>
         <button id="exit-btn" class="secondary">Return to Profile</button>
@@ -66,13 +66,16 @@
       </div>
     </div>
 
-    <div id="music-btn" title="Toggle music">🔊</div>
+    <div id="music-btn" title="Toggle music">🔇</div>
     <footer style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">© 2025</footer>
   </div>
 
 <script>
 /* ============================
-   Enhanced Neon Block Shooter - BUG FIXED
+   FIXED Neon Block Shooter
+   - Prevents speed bug
+   - Proper rate limiting
+   - Frame-rate independent
    ============================ */
 
 const canvas = document.getElementById('game-canvas');
@@ -101,7 +104,7 @@ try {
   console.log('Audio not supported');
 }
 
-let musicMuted = true; // Start muted to avoid autoplay issues
+let musicMuted = true; // Start muted
 
 musicBtn.addEventListener('click', () => {
   if (!music) return;
@@ -127,10 +130,11 @@ const player = {
   w: 50, 
   h: 20, 
   color:'#00eaff', 
-  speed: 6,
+  speed: 360, // pixels per second
   powerup: null,
   powerupTimer: 0,
-  lastShot: 0
+  lastShot: 0,
+  fireRate: 200 // ms between shots
 };
 
 let bullets = [];
@@ -150,6 +154,7 @@ let screenShake = 0;
 /* --- input state --- */
 let leftPress = false;
 let rightPress = false;
+let shootPressed = false; // NEW: Track if shoot key is held
 
 /* --- touch helpers --- */
 let activeTouches = {};
@@ -255,12 +260,12 @@ function collectPowerup(powerup) {
   
   if (type === 'BOMB') {
     // Clear all blocks
+    const blocksDestroyed = blocks.length;
     blocks.forEach(block => {
       for (let i = 0; i < 5; i++) {
         createParticle(block.x + block.w/2, block.y + block.h/2, block.color, 5, 4);
       }
     });
-    const blocksDestroyed = blocks.length;
     blocks = [];
     score += blocksDestroyed * 2;
     combo += blocksDestroyed;
@@ -273,9 +278,9 @@ function spawnBlock() {
   if (bossActive) return; // Don't spawn regular blocks during boss
   
   const types = [
-    { w: 60, h: 30, hp: 1, color: `hsl(${Math.random()*360},80%,60%)`, speed: 1 },
-    { w: 40, h: 40, hp: 2, color: `hsl(${Math.random()*360},100%,50%)`, speed: 1.5 },
-    { w: 80, h: 25, hp: 3, color: `hsl(${Math.random()*360},70%,40%)`, speed: 0.8 }
+    { w: 60, h: 30, hp: 1, color: `hsl(${Math.random()*360},80%,60%)`, speed: 60 },
+    { w: 40, h: 40, hp: 2, color: `hsl(${Math.random()*360},100%,50%)`, speed: 90 },
+    { w: 80, h: 25, hp: 3, color: `hsl(${Math.random()*360},70%,40%)`, speed: 48 }
   ];
   
   const typeIndex = Math.min(Math.floor(wave / 3), types.length - 1);
@@ -303,7 +308,7 @@ function spawnBoss() {
     color: '#ff4757',
     hp: 15 + wave * 2,
     maxHp: 15 + wave * 2,
-    speed: 0.5,
+    speed: 30,
     type: 'boss',
     shootTimer: 0
   };
@@ -314,16 +319,19 @@ function spawnBoss() {
 /* --- shooting mechanics --- */
 function shoot() {
   const now = Date.now();
-  const fireRate = (player.powerup === 'RAPID_FIRE') ? 100 : 200;
+  const currentFireRate = (player.powerup === 'RAPID_FIRE') ? 100 : player.fireRate;
   
-  if (now - player.lastShot < fireRate) return;
+  // CRITICAL FIX: Ensure proper rate limiting
+  if (now - player.lastShot < currentFireRate) {
+    return; // Too soon, don't shoot
+  }
   
   if (player.powerup === 'MULTI_SHOT') {
-    bullets.push({ x: player.x + player.w/2 - 12, y: player.y - 18, w:8, h:16, speed: 10, color: '#ff6b6b' });
-    bullets.push({ x: player.x + player.w/2 - 4, y: player.y - 18, w:8, h:16, speed: 10, color: '#fff' });
-    bullets.push({ x: player.x + player.w/2 + 4, y: player.y - 18, w:8, h:16, speed: 10, color: '#ff6b6b' });
+    bullets.push({ x: player.x + player.w/2 - 12, y: player.y - 18, w:8, h:16, speed: 600, color: '#ff6b6b' });
+    bullets.push({ x: player.x + player.w/2 - 4, y: player.y - 18, w:8, h:16, speed: 600, color: '#fff' });
+    bullets.push({ x: player.x + player.w/2 + 4, y: player.y - 18, w:8, h:16, speed: 600, color: '#ff6b6b' });
   } else {
-    bullets.push({ x: player.x + player.w/2 - 4, y: player.y - 18, w:8, h:16, speed: 10, color: '#fff' });
+    bullets.push({ x: player.x + player.w/2 - 4, y: player.y - 18, w:8, h:16, speed: 600, color: '#fff' });
   }
   
   player.lastShot = now;
@@ -428,17 +436,17 @@ function update(dt) {
     }
   }
   
-  // Movement
-  if(leftPress) player.x -= player.speed * dt * 60;
-  if(rightPress) player.x += player.speed * dt * 60;
+  // Movement (pixels per second * dt)
+  if(leftPress) player.x -= player.speed * dt;
+  if(rightPress) player.x += player.speed * dt;
   player.x = clamp(player.x, 0, W - player.w);
 
-  // Update bullets
-  bullets.forEach(b => b.y -= b.speed * dt * 60);
+  // Bullets
+  bullets.forEach(b => b.y -= b.speed * dt);
   bullets = bullets.filter(b => b.y > -20);
 
-  // Update blocks
-  blocks.forEach(b => b.y += (b.speed + score*0.02) * dt * 60);
+  // Blocks
+  blocks.forEach(b => b.y += (b.speed + score*0.5) * dt); // Slightly increased difficulty
   blocks = blocks.filter(b => b.y < H + 50);
 
   // Check if boss is dead
@@ -527,8 +535,8 @@ function update(dt) {
   }
 
   // Spawn logic
-  spawnTimer += dt * 60;
-  const spawnInterval = Math.max(60 - score*0.3, 25);
+  spawnTimer += dt;
+  const spawnInterval = Math.max(1.5 - wave*0.05, 0.5); // seconds between spawns
   
   if(spawnTimer > spawnInterval && !bossActive) {
     if (wave % 5 === 0 && blocks.length === 0) {
@@ -568,7 +576,7 @@ function loop(ts) {
 
 /* --- game control --- */
 function startGame() {
-  // Reset all game state
+  // Reset ALL state completely
   score = 0;
   bullets = [];
   blocks = [];
@@ -580,15 +588,27 @@ function startGame() {
   combo = 0;
   comboTimer = 0;
   screenShake = 0;
+  
+  // Reset player
   player.x = W/2 - player.w/2;
   player.powerup = null;
   player.powerupTimer = 0;
   player.lastShot = 0;
   
+  // Reset input
+  leftPress = false;
+  rightPress = false;
+  shootPressed = false;
+  
+  // Update UI
   scoreEl.textContent = 'Score: 0';
   comboEl.textContent = 'Combo: 0x';
+  
+  // Hide menus
   menu.classList.add('hidden');
   gameOver.classList.add('hidden');
+  
+  // Start game loop
   running = true;
   lastT = performance.now();
   requestAnimationFrame(loop);
@@ -596,7 +616,7 @@ function startGame() {
 
 function endGame() {
   running = false;
-  finalScore.textContent = 'Score: ' + score + ' | Wave ' + wave + ' | Max Combo ' + combo + 'x';
+  finalScore.textContent = `Score: ${score} | Wave: ${wave} | Best Combo: ${combo}x`;
   gameOver.classList.remove('hidden');
 }
 
@@ -608,19 +628,40 @@ function backToMenu() {
 
 /* --- keyboard controls --- */
 document.addEventListener('keydown', e => {
+  // CRITICAL FIX: Prevent default browser behavior for game keys
+  const gameKeys = ['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight', 'Space', 'Enter', 'KeyF'];
+  if (gameKeys.includes(e.code)) {
+    e.preventDefault();
+  }
+  
   if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = true;
   if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = true;
-  if((e.code === 'KeyF' || e.code === 'Space') && running) shoot();
+  if((e.code === 'KeyF' || e.code === 'Space') && running) {
+    shootPressed = true; // NEW: Track key press
+    shoot(); // Shoot immediately on press
+  }
 });
 
 document.addEventListener('keyup', e => {
   if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = false;
   if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = false;
+  if(e.code === 'KeyF' || e.code === 'Space' || e.code === 'Enter') {
+    shootPressed = false; // NEW: Track key release
+  }
 });
+
+/* --- CRITICAL FIX: Manual shooting loop to prevent key repeat spam --- */
+function handleShooting() {
+  if (shootPressed && running) {
+    shoot();
+  }
+  requestAnimationFrame(handleShooting);
+}
+handleShooting(); // Start the shooting loop
 
 /* --- touch controls --- */
 const TAP_MAX = 300;
-const MOVE_TOL = 20; // Increased tolerance
+const MOVE_TOL = 20;
 
 function getCanvasRect(){ return canvas.getBoundingClientRect(); }
 
@@ -691,7 +732,7 @@ canvas.addEventListener('touchend', function(e) {
     const dt = Date.now() - info.startT;
     
     if(info.mode === 'tap' && dt <= TAP_MAX && !info.moved && running){
-      shoot();
+      shoot(); // Tap to shoot
     }
     
     if(info.mode === 'hold-left') leftPress = false;
