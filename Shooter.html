@@ -25,12 +25,25 @@
     border-radius:14px;
     box-shadow:0 10px 36px rgba(0,0,0,0.5);
     position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
   }
   #score{ color:#fff; font-weight:700; text-shadow:0 0 8px #0006; margin-bottom:4px; }
   #combo{ color:var(--power); font-weight:700; text-shadow:0 0 8px #ffbe0066; margin-bottom:8px; font-size:14px; }
   #ammo-display{ color:var(--accent); font-weight:700; text-shadow:0 0 8px #00eaff66; margin-bottom:8px; font-size:14px; }
   #wave-display{ color:var(--muted); font-weight:600; text-shadow:0 0 8px #0006; margin-bottom:8px; font-size:14px; }
-  canvas{ width:100%; height:auto; display:block; border-radius:12px; background:linear-gradient(180deg,#2d3546,#1a1e26); box-shadow:0 6px 20px rgba(0,0,0,0.5); touch-action:none; }
+  canvas{
+    width:100%;
+    height:auto;
+    max-width:400px;
+    aspect-ratio:2/3;
+    display:block;
+    border-radius:12px;
+    background:linear-gradient(180deg,#2d3546,#1a1e26);
+    box-shadow:0 6px 20px rgba(0,0,0,0.5);
+    touch-action:none;
+  }
   .overlay{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:rgba(12,14,18,0.95); border-radius:14px; z-index:4; }
   .overlay.hidden{ opacity:0; pointer-events:none; transition:opacity .3s; }
   h1,h2{ color:var(--accent); margin:0; text-shadow:0 0 12px #00eaff66 }
@@ -46,8 +59,6 @@
   .difficulty-selector button.active{ background:linear-gradient(90deg,var(--power),#ff6b6b); }
   .wave-bar-container{ width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:4px; }
   .wave-bar{ height:100%; background:linear-gradient(90deg,var(--accent),var(--power)); width:0%; transition:width 0.2s; }
-  .floating-text{ position:absolute; pointer-events:none; font-weight:bold; color:#fff; text-shadow:0 0 10px currentColor; animation:floatUp 1s ease-out forwards; }
-  @keyframes floatUp{ from{ opacity:1; transform:translateY(0); } to{ opacity:0; transform:translateY(-50px); } }
   .reload-warning{ animation:blink 0.5s infinite; }
   @keyframes blink{ 50%{ opacity:0.3; } }
 </style>
@@ -94,11 +105,10 @@
 
 <script>
 /* ============================
-   ULTIMATE Neon Block Shooter
-   - Difficulty System
-   - Ammo & Reload
-   - Wave Progress
-   - Score Popups
+   FIXED UI SCALING VERSION
+   - Proper coordinate mapping
+   - High-DPI support
+   - Responsive canvas
    ============================ */
 
 const canvas = document.getElementById('game-canvas');
@@ -118,8 +128,9 @@ const exitBtns = [document.getElementById('exit-btn'), document.getElementById('
 const musicBtn = document.getElementById('music-btn');
 const difficultyBtns = document.querySelectorAll('.difficulty-btn');
 
-let W = canvas.width = 400;
-let H = canvas.height = 600;
+let W = 400; // Internal game width
+let H = 600; // Internal game height
+let dpr = window.devicePixelRatio || 1;
 
 /* --- audio --- */
 let music = null;
@@ -158,7 +169,7 @@ const DIFFICULTY = {
 let currentDifficulty = 'normal';
 let enemiesInWave = 0;
 let enemiesKilledInWave = 0;
-let waveTarget = 10; // Enemies to kill per wave
+let waveTarget = 10;
 
 const player = { 
   x: W/2 - 25, 
@@ -175,7 +186,6 @@ let bullets = [];
 let blocks = [];
 let particles = [];
 let powerups = [];
-let floatingTexts = [];
 let score = 0;
 let combo = 0;
 let comboTimer = 0;
@@ -191,7 +201,7 @@ let maxAmmo = DIFFICULTY[currentDifficulty].ammo;
 let currentAmmo = maxAmmo;
 let isReloading = false;
 let reloadTimer = 0;
-const RELOAD_TIME = 2000; // 2 seconds
+const RELOAD_TIME = 2000;
 
 /* --- input state --- */
 let leftPress = false;
@@ -201,43 +211,29 @@ let shootPressed = false;
 /* --- touch helpers --- */
 let activeTouches = {};
 
+/* --- SCALING HELPERS --- */
+let canvasScale = { x: 1, y: 1 };
+let displayWidth = 400;
+let displayHeight = 600;
+
+function updateCanvasScale() {
+  const rect = canvas.getBoundingClientRect();
+  displayWidth = rect.width;
+  displayHeight = rect.height;
+  canvasScale.x = W / displayWidth;
+  canvasScale.y = H / displayHeight;
+}
+
+function getCanvasCoords(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left) * canvasScale.x,
+    y: (clientY - rect.top) * canvasScale.y
+  };
+}
+
 /* utility */
 function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-
-/* --- floating text system --- */
-function createFloatingText(x, y, text, color = '#fff') {
-  floatingTexts.push({
-    x, y,
-    text,
-    color,
-    life: 30,
-    maxLife: 30,
-    vy: -1
-  });
-}
-
-function updateFloatingTexts() {
-  floatingTexts = floatingTexts.filter(t => {
-    t.y += t.vy;
-    t.life--;
-    return t.life > 0;
-  });
-}
-
-function drawFloatingTexts() {
-  floatingTexts.forEach(t => {
-    const alpha = t.life / t.maxLife;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = t.color;
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.shadowColor = t.color;
-    ctx.shadowBlur = 10;
-    ctx.fillText(t.text, t.x, t.y);
-    ctx.restore();
-  });
-}
 
 /* --- particle system --- */
 function createParticle(x, y, color, size = 3, speed = 2) {
@@ -279,6 +275,41 @@ function drawParticles() {
   });
 }
 
+/* --- floating text system --- */
+function createFloatingText(x, y, text, color = '#fff') {
+  floatingTexts.push({
+    x, y,
+    text,
+    color,
+    life: 30,
+    maxLife: 30,
+    vy: -1
+  });
+}
+
+function updateFloatingTexts() {
+  floatingTexts = floatingTexts.filter(t => {
+    t.y += t.vy;
+    t.life--;
+    return t.life > 0;
+  });
+}
+
+function drawFloatingTexts() {
+  floatingTexts.forEach(t => {
+    const alpha = t.life / t.maxLife;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = t.color;
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = t.color;
+    ctx.shadowBlur = 10;
+    ctx.fillText(t.text, t.x, t.y);
+    ctx.restore();
+  });
+}
+
 /* --- power-up system --- */
 const POWERUP_TYPES = {
   RAPID_FIRE: { color: '#ffbe00', duration: 300, name: 'Rapid Fire' },
@@ -289,7 +320,7 @@ const POWERUP_TYPES = {
 };
 
 function spawnPowerup(x, y) {
-  if (Math.random() < 0.15) { // 15% chance
+  if (Math.random() < 0.15) {
     const types = Object.keys(POWERUP_TYPES);
     const type = types[Math.floor(Math.random() * types.length)];
     powerups.push({ 
@@ -418,7 +449,7 @@ function shoot() {
   const currentFireRate = (player.powerup === 'RAPID_FIRE') ? 100 : DIFFICULTY[currentDifficulty].playerFireRate;
   
   if (now - player.lastShot < currentFireRate) {
-    return; // Too soon
+    return;
   }
   
   if (player.powerup === 'MULTI_SHOT') {
@@ -446,7 +477,7 @@ function startReload() {
 function updateReload(dt) {
   if (!isReloading) return;
   
-  reloadTimer -= dt * 1000; // Convert to ms
+  reloadTimer -= dt * 1000;
   
   if (reloadTimer <= 0) {
     currentAmmo = maxAmmo;
@@ -538,7 +569,6 @@ function drawBlocks() {
   });
 }
 
-/* --- screen shake --- */
 function applyScreenShake() {
   if (screenShake > 0) {
     const shakeX = (Math.random() - 0.5) * screenShake;
@@ -548,7 +578,6 @@ function applyScreenShake() {
   }
 }
 
-/* --- wave progress --- */
 function updateWaveDisplay() {
   waveEl.textContent = `WAVE ${wave} - ${bossActive ? 'BOSS BATTLE' : `${enemiesKilledInWave}/${waveTarget} Enemies`}`;
   
@@ -561,7 +590,6 @@ function updateWaveDisplay() {
   }
 }
 
-/* --- game logic --- */
 function update(dt) {
   // Update timers
   if (player.powerupTimer > 0) {
@@ -598,8 +626,8 @@ function update(dt) {
     bossActive = false;
     wave++;
     enemiesKilledInWave = 0;
-    waveTarget = 10 + wave * 2; // More enemies per wave
-    score += 50 + wave * 10; // Boss bonus
+    waveTarget = 10 + wave * 2;
+    score += 50 + wave * 10;
     screenShake = 15;
     createFloatingText(W/2, H/2, `WAVE ${wave} CLEARED! +${50 + wave * 10}`, '#ffd700');
   }
@@ -651,13 +679,9 @@ function update(dt) {
           combo++;
           comboTimer = 60;
           
-          // Floating score popup
           createFloatingText(block.x + block.w/2, block.y, `+${points}`, popupColor);
-          
-          // Chance to spawn power-up
           spawnPowerup(block.x + block.w/2, block.y + block.h/2);
           
-          // Screen shake for strong enemies
           if (block.type === 'strong' || block.type === 'boss') {
             screenShake = 5;
           }
@@ -703,7 +727,6 @@ function update(dt) {
   
   if(spawnTimer > spawnInterval && !bossActive) {
     if (enemiesKilledInWave >= waveTarget) {
-      // Wave complete, spawn boss
       if (!bossActive) {
         spawnBoss();
       }
@@ -725,7 +748,6 @@ function render() {
   ctx.save();
   applyScreenShake();
   
-  // Draw game elements
   drawParticles();
   drawPowerups();
   drawBlocks();
@@ -745,58 +767,30 @@ function loop(ts) {
   requestAnimationFrame(loop);
 }
 
-/* --- game control --- */
 function startGame() {
-  // Reset ALL state
-  score = 0;
-  bullets = [];
-  blocks = [];
-  particles = [];
-  floatingTexts = [];
-  powerups = [];
-  spawnTimer = 0;
-  wave = 1;
-  bossActive = false;
-  combo = 0;
-  comboTimer = 0;
-  screenShake = 0;
-  
-  // Reset wave tracking
-  enemiesInWave = 0;
-  enemiesKilledInWave = 0;
-  waveTarget = 10;
+  // Reset state
+  score = 0; bullets = []; blocks = []; particles = []; floatingTexts = []; powerups = [];
+  spawnTimer = 0; wave = 1; bossActive = false; combo = 0; comboTimer = 0; screenShake = 0;
+  enemiesInWave = 0; enemiesKilledInWave = 0; waveTarget = 10;
   
   // Reset player
-  player.x = W/2 - player.w/2;
-  player.powerup = null;
-  player.powerupTimer = 0;
-  player.lastShot = 0;
+  player.x = W/2 - player.w/2; player.powerup = null; player.powerupTimer = 0; player.lastShot = 0;
   
   // Reset ammo
-  maxAmmo = DIFFICULTY[currentDifficulty].ammo;
-  currentAmmo = maxAmmo;
-  isReloading = false;
-  reloadTimer = 0;
-  updateAmmoDisplay();
+  maxAmmo = DIFFICULTY[currentDifficulty].ammo; currentAmmo = maxAmmo; isReloading = false; reloadTimer = 0;
   
   // Reset input
-  leftPress = false;
-  rightPress = false;
-  shootPressed = false;
+  leftPress = false; rightPress = false; shootPressed = false;
   
   // Update UI
-  scoreEl.textContent = 'Score: 0';
-  comboEl.textContent = 'Combo: 0x';
-  waveBar.style.background = 'linear-gradient(90deg, var(--accent), var(--power))';
+  scoreEl.textContent = 'Score: 0'; comboEl.textContent = 'Combo: 0x';
+  updateAmmoDisplay(); waveBar.style.background = 'linear-gradient(90deg, var(--accent), var(--power))';
   
   // Hide menus
-  menu.classList.add('hidden');
-  gameOver.classList.add('hidden');
+  menu.classList.add('hidden'); gameOver.classList.add('hidden');
   
   // Start game loop
-  running = true;
-  lastT = performance.now();
-  requestAnimationFrame(loop);
+  running = true; lastT = performance.now(); requestAnimationFrame(loop);
 }
 
 function endGame() {
@@ -829,28 +823,21 @@ document.addEventListener('keydown', e => {
   
   if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = true;
   if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = true;
-  if(e.code === 'KeyR' && running) {
-    startReload();
-  }
+  if(e.code === 'KeyR' && running) startReload();
   if((e.code === 'KeyF' || e.code === 'Space') && running) {
-    shootPressed = true;
-    shoot();
+    shootPressed = true; shoot();
   }
 });
 
 document.addEventListener('keyup', e => {
   if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = false;
   if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = false;
-  if(e.code === 'KeyF' || e.code === 'Space') {
-    shootPressed = false;
-  }
+  if(e.code === 'KeyF' || e.code === 'Space') shootPressed = false;
 });
 
 /* --- shooting loop --- */
 function handleShooting() {
-  if (shootPressed && running && !isReloading && currentAmmo > 0) {
-    shoot();
-  }
+  if (shootPressed && running && !isReloading && currentAmmo > 0) shoot();
   requestAnimationFrame(handleShooting);
 }
 handleShooting();
@@ -859,23 +846,24 @@ handleShooting();
 const TAP_MAX = 300;
 const MOVE_TOL = 20;
 
-function getCanvasRect(){ return canvas.getBoundingClientRect(); }
-
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();
-  const rect = getCanvasRect();
-  const leftBound = rect.width * 0.30;
-  const rightBound = rect.width * 0.70;
+  const rect = canvas.getBoundingClientRect();
   
   for(const t of e.changedTouches){
     const id = t.identifier;
-    const x = t.clientX - rect.left;
+    const coords = getCanvasCoords(t.clientX, t.clientY);
+    const leftBound = W * 0.30;
+    const rightBound = W * 0.70;
+    
     let mode = 'tap';
+    if(coords.x < leftBound) mode = 'hold-left';
+    else if(coords.x > rightBound) mode = 'hold-right';
     
-    if(x < leftBound) mode = 'hold-left';
-    else if(x > rightBound) mode = 'hold-right';
-    
-    activeTouches[id] = { startX: x, startY: t.clientY - rect.top, startT: Date.now(), mode, moved:false };
+    activeTouches[id] = { 
+      startX: coords.x, startY: coords.y, 
+      startT: Date.now(), mode, moved: false 
+    };
     
     if(mode === 'hold-left') leftPress = true;
     if(mode === 'hold-right') rightPress = true;
@@ -884,33 +872,30 @@ canvas.addEventListener('touchstart', function(e) {
 
 canvas.addEventListener('touchmove', function(e) {
   e.preventDefault();
-  const rect = getCanvasRect();
-  const leftBound = rect.width * 0.30;
-  const rightBound = rect.width * 0.70;
   
   for(const t of e.changedTouches){
     const id = t.identifier;
     const info = activeTouches[id];
     if(!info) continue;
     
-    const x = t.clientX - rect.left;
-    const dx = Math.abs(x - info.startX);
-    const dy = Math.abs((t.clientY - rect.top) - info.startY);
+    const coords = getCanvasCoords(t.clientX, t.clientY);
+    const dx = Math.abs(coords.x - info.startX);
+    const dy = Math.abs(coords.y - info.startY);
     
     if(dx > MOVE_TOL || dy > MOVE_TOL) {
       info.moved = true;
       
-      if(x < leftBound){
+      const leftBound = W * 0.30;
+      const rightBound = W * 0.70;
+      
+      if(coords.x < leftBound){
         info.mode = 'hold-left';
-        leftPress = true;
-        rightPress = false;
-      } else if(x > rightBound){
+        leftPress = true; rightPress = false;
+      } else if(coords.x > rightBound){
         info.mode = 'hold-right';
-        rightPress = true;
-        leftPress = false;
+        rightPress = true; leftPress = false;
       } else {
-        leftPress = false;
-        rightPress = false;
+        leftPress = false; rightPress = false;
       }
     }
   }
@@ -918,13 +903,13 @@ canvas.addEventListener('touchmove', function(e) {
 
 canvas.addEventListener('touchend', function(e) {
   e.preventDefault();
-  const rect = getCanvasRect();
   
   for(const t of e.changedTouches){
     const id = t.identifier;
     const info = activeTouches[id];
     if(!info) continue;
     
+    const coords = getCanvasCoords(t.clientX, t.clientY);
     const dt = Date.now() - info.startT;
     
     if(info.mode === 'tap' && dt <= TAP_MAX && !info.moved && running){
@@ -959,7 +944,7 @@ exitBtns.forEach(b => b.addEventListener('click', () => location.href = 'index.h
 
 /* --- resize handling --- */
 function resizeCanvas() {
-  const rect = canvas.getBoundingClientRect();
+  updateCanvasScale();
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
