@@ -28,6 +28,8 @@
   }
   #score{ color:#fff; font-weight:700; text-shadow:0 0 8px #0006; margin-bottom:4px; }
   #combo{ color:var(--power); font-weight:700; text-shadow:0 0 8px #ffbe0066; margin-bottom:8px; font-size:14px; }
+  #ammo-display{ color:var(--accent); font-weight:700; text-shadow:0 0 8px #00eaff66; margin-bottom:8px; font-size:14px; }
+  #wave-display{ color:var(--muted); font-weight:600; text-shadow:0 0 8px #0006; margin-bottom:8px; font-size:14px; }
   canvas{ width:100%; height:auto; display:block; border-radius:12px; background:linear-gradient(180deg,#2d3546,#1a1e26); box-shadow:0 6px 20px rgba(0,0,0,0.5); touch-action:none; }
   .overlay{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:rgba(12,14,18,0.95); border-radius:14px; z-index:4; }
   .overlay.hidden{ opacity:0; pointer-events:none; transition:opacity .3s; }
@@ -39,17 +41,37 @@
   #music-btn{ position:absolute; right:12px; bottom:12px; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; z-index:6; cursor:pointer; background:rgba(0,234,255,0.08); border:1px solid rgba(0,234,255,0.12); color:var(--accent); box-shadow:0 6px 18px rgba(0,234,255,0.06); }
   #music-btn:hover{ transform:scale(1.06); }
   footer{ color:var(--muted); font-size:12px; text-align:center; margin-top:8px; }
+  .difficulty-selector{ display:flex; gap:8px; margin:8px 0; }
+  .difficulty-selector button{ padding:8px 12px; font-size:12px; }
+  .difficulty-selector button.active{ background:linear-gradient(90deg,var(--power),#ff6b6b); }
+  .wave-bar-container{ width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:4px; }
+  .wave-bar{ height:100%; background:linear-gradient(90deg,var(--accent),var(--power)); width:0%; transition:width 0.2s; }
+  .floating-text{ position:absolute; pointer-events:none; font-weight:bold; color:#fff; text-shadow:0 0 10px currentColor; animation:floatUp 1s ease-out forwards; }
+  @keyframes floatUp{ from{ opacity:1; transform:translateY(0); } to{ opacity:0; transform:translateY(-50px); } }
+  .reload-warning{ animation:blink 0.5s infinite; }
+  @keyframes blink{ 50%{ opacity:0.3; } }
 </style>
 </head>
 <body>
   <div id="game-container" role="application" aria-label="Neon Block Shooter">
     <div id="score">Score: 0</div>
     <div id="combo">Combo: 0x</div>
+    <div id="ammo-display">AMMO: 30 / 30</div>
+    <div id="wave-display">WAVE 1 - Normal Enemies</div>
+    <div class="wave-bar-container">
+      <div class="wave-bar" id="wave-bar"></div>
+    </div>
     <canvas id="game-canvas" width="400" height="600" aria-hidden="false"></canvas>
 
     <div id="menu" class="overlay">
       <h1>Neon Block Shooter</h1>
-      <p>Tap center to shoot. Hold left/right of the screen to move.<br>Keyboard: A / D to move, SPACE to shoot.</p>
+      <p>Select Difficulty:</p>
+      <div class="difficulty-selector">
+        <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+        <button class="difficulty-btn" data-difficulty="normal">Normal</button>
+        <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+      </div>
+      <p>Tap center to shoot. Hold left/right to move.<br>Keyboard: A/D to move, SPACE to shoot, R to reload.</p>
       <div class="menu-buttons">
         <button id="play-btn">Start Game</button>
         <button id="exit-btn" class="secondary">Return to Profile</button>
@@ -72,16 +94,20 @@
 
 <script>
 /* ============================
-   FIXED Neon Block Shooter
-   - Prevents speed bug
-   - Proper rate limiting
-   - Frame-rate independent
+   ULTIMATE Neon Block Shooter
+   - Difficulty System
+   - Ammo & Reload
+   - Wave Progress
+   - Score Popups
    ============================ */
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const comboEl = document.getElementById('combo');
+const ammoEl = document.getElementById('ammo-display');
+const waveEl = document.getElementById('wave-display');
+const waveBar = document.getElementById('wave-bar');
 const menu = document.getElementById('menu');
 const gameOver = document.getElementById('game-over');
 const finalScore = document.getElementById('final-score');
@@ -90,6 +116,7 @@ const restartBtn = document.getElementById('restart-btn');
 const menuBtn = document.getElementById('menu-btn');
 const exitBtns = [document.getElementById('exit-btn'), document.getElementById('exit-btn-over')];
 const musicBtn = document.getElementById('music-btn');
+const difficultyBtns = document.querySelectorAll('.difficulty-btn');
 
 let W = canvas.width = 400;
 let H = canvas.height = 600;
@@ -104,18 +131,16 @@ try {
   console.log('Audio not supported');
 }
 
-let musicMuted = true; // Start muted
+let musicMuted = true;
 
 musicBtn.addEventListener('click', () => {
   if (!music) return;
-  
   musicMuted = !musicMuted;
   if (musicMuted) {
     music.pause();
     musicBtn.textContent = '🔇';
   } else {
     music.play().catch(() => {
-      console.log('Music play failed');
       musicMuted = true;
       musicBtn.textContent = '🔇';
     });
@@ -124,23 +149,33 @@ musicBtn.addEventListener('click', () => {
 });
 
 /* --- game state --- */
+const DIFFICULTY = {
+  easy: { enemySpeed: 0.7, spawnRate: 2.0, ammo: 40, playerFireRate: 250, playerSpeed: 300 },
+  normal: { enemySpeed: 1.0, spawnRate: 1.5, ammo: 30, playerFireRate: 200, playerSpeed: 360 },
+  hard: { enemySpeed: 1.5, spawnRate: 1.0, ammo: 20, playerFireRate: 150, playerSpeed: 420 }
+};
+
+let currentDifficulty = 'normal';
+let enemiesInWave = 0;
+let enemiesKilledInWave = 0;
+let waveTarget = 10; // Enemies to kill per wave
+
 const player = { 
   x: W/2 - 25, 
   y: H - 60, 
   w: 50, 
   h: 20, 
   color:'#00eaff', 
-  speed: 360, // pixels per second
   powerup: null,
   powerupTimer: 0,
-  lastShot: 0,
-  fireRate: 200 // ms between shots
+  lastShot: 0
 };
 
 let bullets = [];
 let blocks = [];
 let particles = [];
 let powerups = [];
+let floatingTexts = [];
 let score = 0;
 let combo = 0;
 let comboTimer = 0;
@@ -151,16 +186,58 @@ let wave = 1;
 let bossActive = false;
 let screenShake = 0;
 
+/* --- ammo system --- */
+let maxAmmo = DIFFICULTY[currentDifficulty].ammo;
+let currentAmmo = maxAmmo;
+let isReloading = false;
+let reloadTimer = 0;
+const RELOAD_TIME = 2000; // 2 seconds
+
 /* --- input state --- */
 let leftPress = false;
 let rightPress = false;
-let shootPressed = false; // NEW: Track if shoot key is held
+let shootPressed = false;
 
 /* --- touch helpers --- */
 let activeTouches = {};
 
 /* utility */
 function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+/* --- floating text system --- */
+function createFloatingText(x, y, text, color = '#fff') {
+  floatingTexts.push({
+    x, y,
+    text,
+    color,
+    life: 30,
+    maxLife: 30,
+    vy: -1
+  });
+}
+
+function updateFloatingTexts() {
+  floatingTexts = floatingTexts.filter(t => {
+    t.y += t.vy;
+    t.life--;
+    return t.life > 0;
+  });
+}
+
+function drawFloatingTexts() {
+  floatingTexts.forEach(t => {
+    const alpha = t.life / t.maxLife;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = t.color;
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = t.color;
+    ctx.shadowBlur = 10;
+    ctx.fillText(t.text, t.x, t.y);
+    ctx.restore();
+  });
+}
 
 /* --- particle system --- */
 function createParticle(x, y, color, size = 3, speed = 2) {
@@ -207,11 +284,12 @@ const POWERUP_TYPES = {
   RAPID_FIRE: { color: '#ffbe00', duration: 300, name: 'Rapid Fire' },
   MULTI_SHOT: { color: '#ff6b6b', duration: 300, name: 'Multi Shot' },
   SHIELD: { color: '#4ecdc4', duration: 400, name: 'Shield' },
-  BOMB: { color: '#ff4757', duration: 0, name: 'Bomb' }
+  BOMB: { color: '#ff4757', duration: 0, name: 'Bomb' },
+  AMMO: { color: '#a8e6cf', duration: 0, name: 'Ammo' }
 };
 
 function spawnPowerup(x, y) {
-  if (Math.random() < 0.12) { // 12% chance
+  if (Math.random() < 0.15) { // 15% chance
     const types = Object.keys(POWERUP_TYPES);
     const type = types[Math.floor(Math.random() * types.length)];
     powerups.push({ 
@@ -242,7 +320,8 @@ function drawPowerups() {
     ctx.fillStyle = '#fff';
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
-    const symbol = p.type === 'RAPID_FIRE' ? '⚡' : p.type === 'MULTI_SHOT' ? '◆' : p.type === 'SHIELD' ? '🛡' : '💣';
+    const symbol = p.type === 'RAPID_FIRE' ? '⚡' : p.type === 'MULTI_SHOT' ? '◆' : 
+                   p.type === 'SHIELD' ? '🛡' : p.type === 'BOMB' ? '💣' : '📦';
     ctx.fillText(symbol, p.x + p.w/2, p.y + p.h/2 + 4);
     ctx.restore();
   });
@@ -250,16 +329,20 @@ function drawPowerups() {
 
 function collectPowerup(powerup) {
   const type = powerup.type;
-  player.powerup = type;
-  player.powerupTimer = POWERUP_TYPES[type].duration;
   
   // Create collection particles
   for (let i = 0; i < 10; i++) {
     createParticle(powerup.x + powerup.w/2, powerup.y + powerup.h/2, powerup.color, 4, 3);
   }
+
+  if (type === 'AMMO') {
+    currentAmmo = Math.min(currentAmmo + 10, maxAmmo);
+  } else {
+    player.powerup = type;
+    player.powerupTimer = POWERUP_TYPES[type].duration;
+  }
   
   if (type === 'BOMB') {
-    // Clear all blocks
     const blocksDestroyed = blocks.length;
     blocks.forEach(block => {
       for (let i = 0; i < 5; i++) {
@@ -270,17 +353,19 @@ function collectPowerup(powerup) {
     score += blocksDestroyed * 2;
     combo += blocksDestroyed;
     comboTimer = 60;
+    createFloatingText(W/2, H/2, `+${blocksDestroyed * 2}`, '#ff4757');
   }
 }
 
 /* --- enemy system --- */
 function spawnBlock() {
-  if (bossActive) return; // Don't spawn regular blocks during boss
+  if (bossActive) return;
   
+  const diff = DIFFICULTY[currentDifficulty];
   const types = [
-    { w: 60, h: 30, hp: 1, color: `hsl(${Math.random()*360},80%,60%)`, speed: 60 },
-    { w: 40, h: 40, hp: 2, color: `hsl(${Math.random()*360},100%,50%)`, speed: 90 },
-    { w: 80, h: 25, hp: 3, color: `hsl(${Math.random()*360},70%,40%)`, speed: 48 }
+    { w: 60, h: 30, hp: 1, color: `hsl(${Math.random()*360},80%,60%)`, speed: 60 * diff.enemySpeed },
+    { w: 40, h: 40, hp: 2, color: `hsl(${Math.random()*360},100%,50%)`, speed: 90 * diff.enemySpeed },
+    { w: 80, h: 25, hp: 3, color: `hsl(${Math.random()*360},70%,40%)`, speed: 48 * diff.enemySpeed }
   ];
   
   const typeIndex = Math.min(Math.floor(wave / 3), types.length - 1);
@@ -296,45 +381,89 @@ function spawnBlock() {
     speed: type.speed,
     type: type.hp > 1 ? 'strong' : 'normal'
   });
+  
+  enemiesInWave++;
 }
 
 function spawnBoss() {
   if (bossActive) return;
   
   bossActive = true;
+  const diff = DIFFICULTY[currentDifficulty];
   const boss = {
     x: W/2 - 60, y: -80,
     w: 120, h: 80,
     color: '#ff4757',
-    hp: 15 + wave * 2,
-    maxHp: 15 + wave * 2,
-    speed: 30,
+    hp: 15 + wave * 3,
+    maxHp: 15 + wave * 3,
+    speed: 30 * diff.enemySpeed,
     type: 'boss',
     shootTimer: 0
   };
   blocks.push(boss);
   screenShake = 10;
+  createFloatingText(W/2, 100, `BOSS WAVE ${wave}!`, '#ff4757');
 }
 
-/* --- shooting mechanics --- */
+/* --- shooting & reload --- */
 function shoot() {
+  if (isReloading || currentAmmo <= 0) {
+    if (!isReloading) {
+      startReload();
+    }
+    return;
+  }
+
   const now = Date.now();
-  const currentFireRate = (player.powerup === 'RAPID_FIRE') ? 100 : player.fireRate;
+  const currentFireRate = (player.powerup === 'RAPID_FIRE') ? 100 : DIFFICULTY[currentDifficulty].playerFireRate;
   
-  // CRITICAL FIX: Ensure proper rate limiting
   if (now - player.lastShot < currentFireRate) {
-    return; // Too soon, don't shoot
+    return; // Too soon
   }
   
   if (player.powerup === 'MULTI_SHOT') {
     bullets.push({ x: player.x + player.w/2 - 12, y: player.y - 18, w:8, h:16, speed: 600, color: '#ff6b6b' });
     bullets.push({ x: player.x + player.w/2 - 4, y: player.y - 18, w:8, h:16, speed: 600, color: '#fff' });
     bullets.push({ x: player.x + player.w/2 + 4, y: player.y - 18, w:8, h:16, speed: 600, color: '#ff6b6b' });
+    currentAmmo -= 3;
   } else {
     bullets.push({ x: player.x + player.w/2 - 4, y: player.y - 18, w:8, h:16, speed: 600, color: '#fff' });
+    currentAmmo--;
   }
   
   player.lastShot = now;
+  updateAmmoDisplay();
+}
+
+function startReload() {
+  if (isReloading || currentAmmo === maxAmmo) return;
+  isReloading = true;
+  reloadTimer = RELOAD_TIME;
+  ammoEl.classList.add('reload-warning');
+  ammoEl.textContent = 'RELOADING...';
+}
+
+function updateReload(dt) {
+  if (!isReloading) return;
+  
+  reloadTimer -= dt * 1000; // Convert to ms
+  
+  if (reloadTimer <= 0) {
+    currentAmmo = maxAmmo;
+    isReloading = false;
+    reloadTimer = 0;
+    ammoEl.classList.remove('reload-warning');
+    updateAmmoDisplay();
+  } else {
+    const progress = Math.ceil(reloadTimer / 1000);
+    ammoEl.textContent = `RELOADING... ${progress}s`;
+  }
+}
+
+function updateAmmoDisplay() {
+  if (!isReloading) {
+    ammoEl.textContent = `AMMO: ${currentAmmo} / ${maxAmmo}`;
+  }
 }
 
 /* --- drawing --- */
@@ -419,6 +548,19 @@ function applyScreenShake() {
   }
 }
 
+/* --- wave progress --- */
+function updateWaveDisplay() {
+  waveEl.textContent = `WAVE ${wave} - ${bossActive ? 'BOSS BATTLE' : `${enemiesKilledInWave}/${waveTarget} Enemies`}`;
+  
+  if (!bossActive) {
+    const progress = Math.min(enemiesKilledInWave / waveTarget, 1) * 100;
+    waveBar.style.width = progress + '%';
+  } else {
+    waveBar.style.width = '100%';
+    waveBar.style.background = 'linear-gradient(90deg, #ff4757, #ff6b6b)';
+  }
+}
+
 /* --- game logic --- */
 function update(dt) {
   // Update timers
@@ -436,9 +578,10 @@ function update(dt) {
     }
   }
   
-  // Movement (pixels per second * dt)
-  if(leftPress) player.x -= player.speed * dt;
-  if(rightPress) player.x += player.speed * dt;
+  // Movement
+  const playerSpeed = player.powerup === 'RAPID_FIRE' ? DIFFICULTY[currentDifficulty].playerSpeed * 1.2 : DIFFICULTY[currentDifficulty].playerSpeed;
+  if(leftPress) player.x -= playerSpeed * dt;
+  if(rightPress) player.x += playerSpeed * dt;
   player.x = clamp(player.x, 0, W - player.w);
 
   // Bullets
@@ -446,17 +589,19 @@ function update(dt) {
   bullets = bullets.filter(b => b.y > -20);
 
   // Blocks
-  blocks.forEach(b => b.y += (b.speed + score*0.5) * dt); // Slightly increased difficulty
+  const enemySpeedMultiplier = DIFFICULTY[currentDifficulty].enemySpeed;
+  blocks.forEach(b => b.y += (b.speed + score*0.3) * enemySpeedMultiplier * dt);
   blocks = blocks.filter(b => b.y < H + 50);
 
   // Check if boss is dead
-  if (bossActive && blocks.length === 0) {
+  if (bossActive && !blocks.some(b => b.type === 'boss')) {
     bossActive = false;
     wave++;
-    score += 50; // Boss bonus
-    for (let i = 0; i < 20; i++) {
-      createParticle(W/2, H/2, '#ff4757', 6, 5);
-    }
+    enemiesKilledInWave = 0;
+    waveTarget = 10 + wave * 2; // More enemies per wave
+    score += 50 + wave * 10; // Boss bonus
+    screenShake = 15;
+    createFloatingText(W/2, H/2, `WAVE ${wave} CLEARED! +${50 + wave * 10}`, '#ffd700');
   }
 
   // Update power-ups
@@ -464,6 +609,9 @@ function update(dt) {
   
   // Update particles
   updateParticles();
+
+  // Update floating texts
+  updateFloatingTexts();
 
   // Collision detection
   for(let i = bullets.length -1; i >=0; i--) {
@@ -483,14 +631,28 @@ function update(dt) {
         
         if (block.hp <= 0) {
           blocks.splice(j,1);
-          score++;
-          combo++;
-          comboTimer = 60; // 1 second at 60fps
+          enemiesKilledInWave++;
           
-          // Combo bonus
-          if (combo > 5) {
-            score += Math.floor(combo / 5);
+          let points = 1;
+          let popupColor = '#fff';
+          
+          if (block.type === 'strong') {
+            points = 2;
+            popupColor = '#ffbe00';
+          } else if (block.type === 'boss') {
+            points = 10 + wave * 2;
+            popupColor = '#ff4757';
           }
+          
+          const comboBonus = Math.floor(combo / 5);
+          points += comboBonus;
+          
+          score += points;
+          combo++;
+          comboTimer = 60;
+          
+          // Floating score popup
+          createFloatingText(block.x + block.w/2, block.y, `+${points}`, popupColor);
           
           // Chance to spawn power-up
           spawnPowerup(block.x + block.w/2, block.y + block.h/2);
@@ -501,8 +663,6 @@ function update(dt) {
           }
         }
         
-        scoreEl.textContent = 'Score: ' + score;
-        comboEl.textContent = 'Combo: ' + combo + 'x';
         break;
       }
     }
@@ -534,24 +694,34 @@ function update(dt) {
     }
   }
 
+  // Update reload
+  updateReload(dt);
+
   // Spawn logic
+  const spawnInterval = DIFFICULTY[currentDifficulty].spawnRate;
   spawnTimer += dt;
-  const spawnInterval = Math.max(1.5 - wave*0.05, 0.5); // seconds between spawns
   
   if(spawnTimer > spawnInterval && !bossActive) {
-    if (wave % 5 === 0 && blocks.length === 0) {
-      spawnBoss();
+    if (enemiesKilledInWave >= waveTarget) {
+      // Wave complete, spawn boss
+      if (!bossActive) {
+        spawnBoss();
+      }
     } else {
       spawnBlock();
     }
     spawnTimer = 0;
   }
+  
+  // Update displays
+  updateWaveDisplay();
+  scoreEl.textContent = 'Score: ' + score;
+  comboEl.textContent = 'Combo: ' + combo + 'x';
 }
 
 function render() {
   ctx.clearRect(0,0,W,H);
   
-  // Apply screen shake
   ctx.save();
   applyScreenShake();
   
@@ -561,6 +731,7 @@ function render() {
   drawBlocks();
   drawBullets();
   drawPlayer();
+  drawFloatingTexts();
   
   ctx.restore();
 }
@@ -576,11 +747,12 @@ function loop(ts) {
 
 /* --- game control --- */
 function startGame() {
-  // Reset ALL state completely
+  // Reset ALL state
   score = 0;
   bullets = [];
   blocks = [];
   particles = [];
+  floatingTexts = [];
   powerups = [];
   spawnTimer = 0;
   wave = 1;
@@ -589,11 +761,23 @@ function startGame() {
   comboTimer = 0;
   screenShake = 0;
   
+  // Reset wave tracking
+  enemiesInWave = 0;
+  enemiesKilledInWave = 0;
+  waveTarget = 10;
+  
   // Reset player
   player.x = W/2 - player.w/2;
   player.powerup = null;
   player.powerupTimer = 0;
   player.lastShot = 0;
+  
+  // Reset ammo
+  maxAmmo = DIFFICULTY[currentDifficulty].ammo;
+  currentAmmo = maxAmmo;
+  isReloading = false;
+  reloadTimer = 0;
+  updateAmmoDisplay();
   
   // Reset input
   leftPress = false;
@@ -603,6 +787,7 @@ function startGame() {
   // Update UI
   scoreEl.textContent = 'Score: 0';
   comboEl.textContent = 'Combo: 0x';
+  waveBar.style.background = 'linear-gradient(90deg, var(--accent), var(--power))';
   
   // Hide menus
   menu.classList.add('hidden');
@@ -616,7 +801,7 @@ function startGame() {
 
 function endGame() {
   running = false;
-  finalScore.textContent = `Score: ${score} | Wave: ${wave} | Best Combo: ${combo}x`;
+  finalScore.textContent = `Score: ${score} | Wave: ${wave} | Best Combo: ${combo}x | Difficulty: ${currentDifficulty.toUpperCase()}`;
   gameOver.classList.remove('hidden');
 }
 
@@ -626,38 +811,49 @@ function backToMenu() {
   gameOver.classList.add('hidden');
 }
 
+/* --- difficulty selection --- */
+difficultyBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    difficultyBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDifficulty = btn.dataset.difficulty;
+  });
+});
+
 /* --- keyboard controls --- */
 document.addEventListener('keydown', e => {
-  // CRITICAL FIX: Prevent default browser behavior for game keys
-  const gameKeys = ['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight', 'Space', 'Enter', 'KeyF'];
+  const gameKeys = ['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight', 'Space', 'KeyR'];
   if (gameKeys.includes(e.code)) {
     e.preventDefault();
   }
   
   if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = true;
   if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = true;
+  if(e.code === 'KeyR' && running) {
+    startReload();
+  }
   if((e.code === 'KeyF' || e.code === 'Space') && running) {
-    shootPressed = true; // NEW: Track key press
-    shoot(); // Shoot immediately on press
+    shootPressed = true;
+    shoot();
   }
 });
 
 document.addEventListener('keyup', e => {
   if(e.code === 'KeyA' || e.code === 'ArrowLeft') leftPress = false;
   if(e.code === 'KeyD' || e.code === 'ArrowRight') rightPress = false;
-  if(e.code === 'KeyF' || e.code === 'Space' || e.code === 'Enter') {
-    shootPressed = false; // NEW: Track key release
+  if(e.code === 'KeyF' || e.code === 'Space') {
+    shootPressed = false;
   }
 });
 
-/* --- CRITICAL FIX: Manual shooting loop to prevent key repeat spam --- */
+/* --- shooting loop --- */
 function handleShooting() {
-  if (shootPressed && running) {
+  if (shootPressed && running && !isReloading && currentAmmo > 0) {
     shoot();
   }
   requestAnimationFrame(handleShooting);
 }
-handleShooting(); // Start the shooting loop
+handleShooting();
 
 /* --- touch controls --- */
 const TAP_MAX = 300;
@@ -732,7 +928,7 @@ canvas.addEventListener('touchend', function(e) {
     const dt = Date.now() - info.startT;
     
     if(info.mode === 'tap' && dt <= TAP_MAX && !info.moved && running){
-      shoot(); // Tap to shoot
+      shoot();
     }
     
     if(info.mode === 'hold-left') leftPress = false;
@@ -771,6 +967,7 @@ resizeCanvas();
 /* initial state */
 scoreEl.textContent = 'Score: 0';
 comboEl.textContent = 'Combo: 0x';
+updateAmmoDisplay();
 </script>
 </body>
 </html>
