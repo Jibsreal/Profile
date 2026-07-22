@@ -1,233 +1,423 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Profile — By Jibs</title>
-<meta name="description" content="Personal profile / resume. Replace placeholders with your details." />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jibs — Portfolio</title>
 <style>
-:root{
-  --bg:#0f1724; --card:#0b1220; --muted:#9aa7bd; --accent:#7c5cff;
-  --glass: rgba(255,255,255,0.04);
-  --radius:12px; font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0; background:linear-gradient(180deg,#061021 0%, #071529 60%);
-  color:#e6eef8; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  padding:32px;
-}
+  :root{
+    --bg-deep:#060d1a;
+    --bg-mid:#0a1628;
+    --bg-card:#0d1b2e;
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --accent:#7c5cff;
+    --accent2:#2ad1d1;
+    --glass: rgba(255,255,255,0.03);
+    --radius:16px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.45);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 50%, #0c1a30 100%);
+    color:var(--text);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
 
-.wrap{max-width:980px;margin:0 auto;padding:24px; display:grid; grid-template-columns: 320px 1fr; gap:24px;}
-@media (max-width:880px){ .wrap{grid-template-columns:1fr; padding:16px;} }
+  /* ambient glow */
+  .glow{
+    position:fixed; width:500px; height:500px; border-radius:50%;
+    filter:blur(120px); opacity:0.15; pointer-events:none; z-index:0;
+  }
+  .glow-1{top:-120px; left:-80px; background:var(--accent);}
+  .glow-2{bottom:-100px; right:-60px; background:var(--accent2);}
 
-.card{
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius: var(--radius); padding:20px; box-shadow: 0 6px 18px rgba(2,6,23,0.6);
-  border:1px solid rgba(255,255,255,0.03);
-}
+  .container{
+    max-width:1100px; margin:0 auto; padding:40px 24px;
+    position:relative; z-index:1;
+  }
 
-/* LEFT COLUMN */
-.profile{
-  display:flex; gap:16px; align-items:center;
-  background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
-  padding:18px;border-radius:12px;
-}
-.avatar{
-  width:88px;height:88px;border-radius:14px;flex:0 0 88px;
-  display:grid;place-items:center;font-weight:700;font-size:28px;color:white;
-  background:linear-gradient(135deg,var(--accent),#2ad1d1);
-  box-shadow:0 6px 18px rgba(124,92,255,0.18), inset 0 -6px 18px rgba(255,255,255,0.02);
-}
-.meta h1{margin:0;font-size:20px}
-.meta p{margin:6px 0 0;color:var(--muted);font-size:13px}
+  /* HERO */
+  .hero{
+    display:flex; align-items:center; gap:32px;
+    padding:40px; border-radius:var(--radius);
+    background: linear-gradient(135deg, rgba(124,92,255,0.08), rgba(42,209,209,0.05));
+    border:1px solid rgba(255,255,255,0.04);
+    box-shadow: var(--shadow);
+    margin-bottom:32px;
+    position:relative; overflow:hidden;
+  }
+  .hero::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  }
+  .avatar-wrap{
+    position:relative; flex-shrink:0;
+  }
+  .avatar{
+    width:120px; height:120px; border-radius:20px; object-fit:cover;
+    border:2px solid rgba(124,92,255,0.3);
+    box-shadow: 0 0 30px rgba(124,92,255,0.2);
+    transition: transform 0.4s ease;
+  }
+  .avatar-wrap:hover .avatar{ transform: scale(1.05); }
+  .status-dot{
+    position:absolute; bottom:6px; right:6px; width:16px; height:16px;
+    background:#22c55e; border-radius:50%; border:3px solid var(--bg-card);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4);}
+    50%{box-shadow:0 0 0 8px rgba(34,197,94,0);}
+  }
+  .hero-text h1{
+    font-size:2.2rem; font-weight:700; letter-spacing:-0.02em;
+    background: linear-gradient(90deg, #fff, #c4b5fd);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .hero-text .tagline{
+    color:var(--muted); font-size:1.05rem; margin-top:6px;
+  }
+  .hero-badges{
+    display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;
+  }
+  .badge{
+    padding:6px 14px; border-radius:999px; font-size:0.82rem; font-weight:500;
+    background: var(--glass); border:1px solid rgba(255,255,255,0.06);
+    color:var(--muted); transition: all 0.3s ease;
+  }
+  .badge:hover{
+    background: rgba(124,92,255,0.12); color:#c4b5fd; border-color:rgba(124,92,255,0.25);
+    transform: translateY(-2px);
+  }
 
-.bio{margin-top:14px;color:var(--muted);line-height:1.5;font-size:14px}
-.tag{display:inline-block;margin-right:6px;margin-top:10px;padding:6px 8px;background:var(--glass);border-radius:999px;color:var(--muted);font-size:12px}
+  /* GRID LAYOUT */
+  .grid-2{
+    display:grid; grid-template-columns: 1fr 1fr; gap:24px;
+  }
+  @media(max-width:800px){ .grid-2{grid-template-columns:1fr;} }
 
-.skills{margin-top:14px; position:relative;}
-.skill{margin-bottom:12px;position:relative;}
-.skill label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
-.bar{
-  height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;
-}
-.bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#2ad1d1);width:0%;transition:width 900ms cubic-bezier(.2,.9,.3,1)}
-.skill:hover .bar > i{
-  filter:brightness(1.3);
-  box-shadow:0 0 8px rgba(124,92,255,0.4);
-}
+  /* CARDS */
+  .card{
+    background: var(--bg-card);
+    border-radius:var(--radius); padding:28px;
+    border:1px solid rgba(255,255,255,0.04);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position:relative; overflow:hidden;
+  }
+  .card:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(124,92,255,0.08);
+  }
+  .card::after{
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  }
+  .card-title{
+    font-size:1.1rem; font-weight:600; margin-bottom:16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .card-title .icon{
+    width:32px; height:32px; border-radius:8px;
+    display:grid; place-items:center; font-size:1rem;
+    background: linear-gradient(135deg, rgba(124,92,255,0.15), rgba(42,209,209,0.1));
+  }
 
-/* Tooltip for skill info */
-.tooltip {
-  position: absolute;
-  background: var(--card);
-  color: #fff;
-  font-size: 13px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  transform: translateY(6px);
-  max-width: 240px;
-  line-height: 1.4;
-  z-index: 999;
-}
-.tooltip.show {
-  opacity: 1;
-  transform: translateY(0);
-}
+  /* ABOUT */
+  .about-text{
+    color:var(--muted); line-height:1.7; font-size:0.95rem;
+  }
 
-/* RIGHT COLUMN */
-.right-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-.right-head h2{margin:0}
-.tagline{color:var(--muted);margin-top:6px;font-size:14px}
+  /* SKILLS */
+  .skill{
+    margin-bottom:18px;
+  }
+  .skill-top{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
+  }
+  .skill-name{ font-size:0.9rem; font-weight:500; }
+  .skill-pct{ font-size:0.8rem; color:var(--muted); font-variant-numeric: tabular-nums; }
+  .skill-bar-bg{
+    height:8px; background:rgba(255,255,255,0.04); border-radius:999px; overflow:hidden;
+  }
+  .skill-bar-fill{
+    height:100%; border-radius:999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width:0%; transition: width 1.2s cubic-bezier(0.22,1,0.36,1);
+    position:relative;
+  }
+  .skill-bar-fill::after{
+    content:''; position:absolute; right:0; top:0; bottom:0; width:20px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+    border-radius:0 999px 999px 0;
+  }
 
-.section{margin-top:18px}
-.section h3{margin:0 0 12px 0;font-size:15px}
-.timeline{display:flex;flex-direction:column;gap:12px}
-.job{background:var(--glass);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
-.job .row{display:flex;justify-content:space-between;align-items:center}
-.job .title{font-weight:600}
-.small{font-size:13px;color:var(--muted)}
+  /* QUICK INFO */
+  .info-row{
+    display:flex; align-items:center; gap:12px; padding:10px 0;
+    border-bottom:1px solid rgba(255,255,255,0.03);
+  }
+  .info-row:last-child{ border-bottom:none; }
+  .info-icon{ width:36px; height:36px; border-radius:10px; flex-shrink:0;
+    display:grid; place-items:center; font-size:1rem;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04);
+  }
+  .info-label{ font-size:0.8rem; color:var(--muted); }
+  .info-value{ font-size:0.92rem; font-weight:500; margin-top:2px; }
 
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media (max-width:560px){ .grid{grid-template-columns:1fr} }
+  /* PROJECTS */
+  .projects-grid{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;
+  }
+  @media(max-width:800px){ .projects-grid{grid-template-columns:1fr;} }
+  .project-card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+    border-radius:14px; padding:22px; border:1px solid rgba(255,255,255,0.04);
+    transition: all 0.35s ease; position:relative; overflow:hidden;
+  }
+  .project-card:hover{
+    transform: translateY(-6px);
+    border-color: rgba(124,92,255,0.2);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+  .project-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity:0; transition: opacity 0.3s ease;
+  }
+  .project-card:hover::before{ opacity:1; }
+  .project-icon{
+    width:44px; height:44px; border-radius:12px; margin-bottom:14px;
+    display:grid; place-items:center; font-size:1.3rem;
+    background: linear-gradient(135deg, rgba(124,92,255,0.12), rgba(42,209,209,0.08));
+    border:1px solid rgba(255,255,255,0.05);
+  }
+  .project-title{ font-size:1.05rem; font-weight:600; margin-bottom:8px; }
+  .project-desc{ color:var(--muted); font-size:0.88rem; line-height:1.5; margin-bottom:16px; }
+  .project-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 18px; border-radius:10px; font-size:0.85rem; font-weight:500;
+    text-decoration:none; color:#fff;
+    background: linear-gradient(135deg, rgba(124,92,255,0.2), rgba(42,209,209,0.15));
+    border:1px solid rgba(124,92,255,0.2);
+    transition: all 0.3s ease;
+  }
+  .project-btn:hover{
+    background: linear-gradient(135deg, rgba(124,92,255,0.35), rgba(42,209,209,0.25));
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(124,92,255,0.2);
+  }
+  .coming-soon .project-icon{ opacity:0.5; }
+  .coming-soon .project-title{ color:var(--muted); }
 
-.project{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
-.project h4{margin:0 0 6px 0}
-.project p{margin:0;color:var(--muted);font-size:13px}
+  /* FOOTER */
+  footer{
+    text-align:center; padding:40px 0 20px; color:var(--muted); font-size:0.85rem;
+  }
+  footer .heart{ color:#ef4444; display:inline-block; animation: heartbeat 1.5s infinite; }
+  @keyframes heartbeat{
+    0%,100%{transform:scale(1);}
+    14%{transform:scale(1.15);}
+    28%{transform:scale(1);}
+    42%{transform:scale(1.15);}
+  }
 
-footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+  /* floating particles */
+  .particle{
+    position:fixed; width:4px; height:4px; background:rgba(124,92,255,0.3);
+    border-radius:50%; pointer-events:none; z-index:0;
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp{
+    0%{transform:translateY(100vh) scale(0); opacity:0;}
+    10%{opacity:1;}
+    90%{opacity:1;}
+    100%{transform:translateY(-10vh) scale(1); opacity:0;}
+  }
+
+  /* smooth reveal */
+  .reveal{
+    opacity:0; transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible{ opacity:1; transform: translateY(0); }
 </style>
 </head>
 <body>
-<main class="wrap">
-  <!-- LEFT COLUMN -->
-  <aside>
-    <div class="card profile" id="profileCard">
-      <div class="avatar" aria-hidden="false" role="button" tabindex="0" style="cursor:pointer">
-        <img id="avatarImage" src="https://media.tenor.com/prn7gJhr5xgAAAAj/kirby-headphones.gif" alt="Kibal avatar" style="width:100%;height:100%;border-radius:12px;object-fit:cover;display:block" />
-      </div>
-      <div class="meta">
-        <h1>M. Jibreen</h1>
-        <p class="muted">Beginner Developer :)</p>
-        <div class="tagline muted">#Ilovecodesomething</div>
-      </div>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero reveal">
+    <div class="avatar-wrap">
+      <img class="avatar" src="https://media.tenor.com/prn7gJhr5xgAAAAj/kirby-headphones.gif" alt="Jibs avatar">
+      <div class="status-dot"></div>
     </div>
-
-    <div class="card bio" style="margin-top:14px">
-      <strong>About</strong>
-      <p class="muted" style="margin-top:8px">
-        Hi! I'm a young developer deeply interested in coding and exploring new programming languages and web development tools. I love creating beautiful, functional web apps and Python projects :D
-      </p>
-
-      <div class="skills">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Skills</strong>
-          <span class="muted">proficiency</span>
-        </div>
-
-        <div class="skill" data-percent="91" data-info="Mastering responsive layouts, flexbox, grid, and animation.">
-          <label>HTML & CSS <span class="muted">91%</span></label>
-          <div class="bar"><i></i></div>
-        </div>
-
-        <div class="skill" data-percent="87" data-info="Writing automation scripts, using libraries, exploring AI APIs.">
-          <label>Python <span class="muted">87%</span></label>
-          <div class="bar"><i></i></div>
-        </div>
-
-        <div class="skill" data-percent="67" data-info="Building dynamic UIs, learning DOM manipulation and events.">
-          <label>JavaScript <span class="muted">67%</span></label>
-          <div class="bar"><i></i></div>
-        </div>
-
+    <div class="hero-text">
+      <h1>M. Jibreen</h1>
+      <p class="tagline">Beginner Developer building imaginary things.</p>
+      <div class="hero-badges">
+        <span class="badge">2+ yrs Experience</span>
+        <span class="badge">Somewhere in Indonesia</span>
+        <span class="badge">#Ilovecodesomething</span>
       </div>
-    </div>
-
-    <div class="card" style="margin-top:14px">
-      <strong>Quick info</strong>
-      <div style="margin-top:8px" class="muted">
-        <div><strong>Availability:</strong> Busy ;-;</div>
-        <div><strong>Languages:</strong> English, Indonesia, France</div>
-        <div><strong>Education:</strong> High School</div>
-        <div><strong>Hobbies:</strong> Coding, Games, Chess</div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- RIGHT COLUMN -->
-  <section>
-    <div class="card">
-      <div class="right-head">
-        <div>
-          <h2>Jibs :D</h2>
-          <div class="tagline muted">Beginner Developer building imaginary things.</div>
-        </div>
-        <div style="text-align:right">
-          <div class="muted">Experience: 2+ yrs</div>
-          <div class="muted">Location: Somewhere in Indonesia</div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h3>Testing projects</h3>
-        <div class="grid">
-          <div class="project">
-            <h4>Shooter Game</h4>
-            <p class="muted">A fun browser shooter made with HTML, CSS, and JavaScript.</p>
-            <a href="Shooter.html" class="btn primary" style="margin-top:12px;display:inline-block;text-align:center;">             ▶ Play Full Game         </a>
-          </div>
-           <div class="project">
-            <h4>Math Games</h4>
-            <p class="muted">A fun Math Games made with HTML, CSS, and JavaScript.</p>
-            <a href="Math.html" class="btn primary" style="margin-top:12px;display:inline-block;text-align:center;">             ▶ Play Full Game         </a>
-          </div>
-          <div class="project">
-            <h4>???</h4>
-            <p class="muted">Coming Soon.</p>
-          </div>
-        </div>
-      </div>
-      <footer>
-        Made by jibs😀😋 | &copy; 2025 Jibs
-      </footer>
     </div>
   </section>
-</main>
 
-<!-- Tooltip element -->
-<div id="skillTooltip" class="tooltip"></div>
+  <div class="grid-2">
+    <!-- ABOUT -->
+    <div class="card reveal">
+      <div class="card-title">
+        <div class="icon">👋</div>
+        About Me
+      </div>
+      <p class="about-text">
+        Hi! I'm a young developer deeply interested in coding and exploring new programming languages and web development tools. I love creating beautiful, functional web apps and Python projects :D
+      </p>
+    </div>
+
+    <!-- QUICK INFO -->
+    <div class="card reveal">
+      <div class="card-title">
+        <div class="icon">📋</div>
+        Quick Info
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🟢</div>
+        <div>
+          <div class="info-label">Availability</div>
+          <div class="info-value">Busy ;-;</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🌐</div>
+        <div>
+          <div class="info-label">Languages</div>
+          <div class="info-value">English, Indonesia, France</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🎓</div>
+        <div>
+          <div class="info-label">Education</div>
+          <div class="info-value">High School</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🎮</div>
+        <div>
+          <div class="info-label">Hobbies</div>
+          <div class="info-value">Coding, Games, Chess</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="card reveal" style="margin-top:24px;">
+    <div class="card-title">
+      <div class="icon">⚡</div>
+      Skills & Proficiency
+    </div>
+
+    <div class="skill" data-percent="91">
+      <div class="skill-top">
+        <span class="skill-name">HTML & CSS</span>
+        <span class="skill-pct">91%</span>
+      </div>
+      <div class="skill-bar-bg"><div class="skill-bar-fill"></div></div>
+    </div>
+
+    <div class="skill" data-percent="87">
+      <div class="skill-top">
+        <span class="skill-name">Python</span>
+        <span class="skill-pct">87%</span>
+      </div>
+      <div class="skill-bar-bg"><div class="skill-bar-fill"></div></div>
+    </div>
+
+    <div class="skill" data-percent="67">
+      <div class="skill-top">
+        <span class="skill-name">JavaScript</span>
+        <span class="skill-pct">67%</span>
+      </div>
+      <div class="skill-bar-bg"><div class="skill-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="card reveal" style="margin-top:24px;">
+    <div class="card-title">
+      <div class="icon">🚀</div>
+      Testing Projects
+    </div>
+    <div class="projects-grid">
+      <div class="project-card">
+        <div class="project-icon">🎯</div>
+        <div class="project-title">Shooter Game</div>
+        <div class="project-desc">A fun browser shooter made with HTML, CSS, and JavaScript.</div>
+        <a href="Shooter.html" class="project-btn">▶ Play Full Game</a>
+      </div>
+      <div class="project-card">
+        <div class="project-icon">🔢</div>
+        <div class="project-title">Math Games</div>
+        <div class="project-desc">A fun Math Games made with HTML, CSS, and JavaScript.</div>
+        <a href="Math.html" class="project-btn">▶ Play Full Game</a>
+      </div>
+      <div class="project-card coming-soon">
+        <div class="project-icon">❓</div>
+        <div class="project-title">???</div>
+        <div class="project-desc">Coming Soon.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="reveal">
+    Made by jibs <span class="heart">❤️</span> | &copy; 2025 Jibs
+  </footer>
+
+</div>
 
 <script>
-// Animate skill bars
-document.addEventListener('DOMContentLoaded', function(){
-  document.querySelectorAll('.skill').forEach(function(el, i){
-    var pct = el.getAttribute('data-percent') || 60;
-    setTimeout(function(){
-      el.querySelector('i').style.width = pct + '%';
-    }, 150 + i*120);
-  });
-});
+  // Animate skill bars on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        // animate bars inside
+        entry.target.querySelectorAll('.skill').forEach((skill, i) => {
+          const pct = skill.getAttribute('data-percent');
+          const bar = skill.querySelector('.skill-bar-fill');
+          setTimeout(() => { bar.style.width = pct + '%'; }, 200 + i * 150);
+        });
+      }
+    });
+  }, { threshold: 0.15 });
 
-// Tooltip interactivity
-const tooltip = document.getElementById('skillTooltip');
-document.querySelectorAll('.skill').forEach(skill => {
-  skill.addEventListener('mousemove', e => {
-    const info = skill.getAttribute('data-info');
-    tooltip.textContent = info;
-    tooltip.classList.add('show');
-    tooltip.style.left = e.pageX + 15 + 'px';
-    tooltip.style.top = e.pageY + 10 + 'px';
-  });
-  skill.addEventListener('mouseleave', () => {
-    tooltip.classList.remove('show');
-  });
-});
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Floating particles
+  function createParticle(){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+    p.style.opacity = Math.random() * 0.4 + 0.1;
+    p.style.width = p.style.height = (Math.random() * 4 + 2) + 'px';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 20000);
+  }
+  setInterval(createParticle, 800);
+  for(let i=0;i<15;i++) setTimeout(createParticle, i*200);
 </script>
+
 </body>
 </html>
