@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Math Games ⚡</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Inter:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600&display=swap');
 
     :root{
       --bg: radial-gradient(circle at 30% 20%, #0b1220 0%, #040a14 100%);
@@ -14,222 +14,565 @@
       --text: #eaf4ff;
       --muted: #8ba3c4;
       --warning: #f87171;
+      --gold: #fbbf24;
     }
     *{box-sizing:border-box}
     body{
-      font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;
+      font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;
     }
     .card{
-      background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border-radius:20px;padding:32px;max-width:780px;width:100%;box-shadow:0 0 40px rgba(0,234,255,0.15);
-      animation: float 5s ease-in-out infinite;
+      background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);border-radius:24px;padding:32px;max-width:800px;width:100%;box-shadow:0 0 60px rgba(0,234,255,0.12), inset 0 1px 0 rgba(255,255,255,0.1);
+      animation: float 6s ease-in-out infinite;border:1px solid rgba(255,255,255,0.08);
     }
     @keyframes float{
       0%,100%{transform:translateY(0)}
-      50%{transform:translateY(-5px)}
+      50%{transform:translateY(-6px)}
     }
-    h1{font-family:'Orbitron',sans-serif;font-size:28px;margin:0 0 10px;text-align:center;color:var(--accent)}
-    p.lead{text-align:center;color:var(--muted);margin-bottom:22px}
-    .row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
-    select,input[type=number]{background:rgba(255,255,255,0.1);color:var(--text);border:1px solid rgba(255,255,255,0.1);padding:8px 12px;border-radius:10px;}
-    input[type=number]:focus,select:focus{outline:none;border-color:var(--accent)}
-    .question{font-size:36px;margin:20px 0;text-align:center;font-family:'Orbitron',sans-serif;letter-spacing:1px}
+    h1{font-family:'Orbitron',sans-serif;font-size:32px;margin:0 0 8px;text-align:center;color:var(--accent);text-shadow:0 0 20px rgba(0,234,255,0.3)}
+    p.lead{text-align:center;color:var(--muted);margin-bottom:24px;font-size:15px}
+    
+    .settings-grid{
+      display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;margin-bottom:20px;
+    }
+    .setting-group{display:flex;flex-direction:column;gap:4px}
+    .setting-group label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+    select,input[type=number]{
+      background:rgba(255,255,255,0.08);color:var(--text);border:1px solid rgba(255,255,255,0.12);padding:10px 12px;border-radius:10px;font-family:inherit;font-size:14px;width:100%;transition:border-color 0.2s;
+    }
+    select:focus,input[type=number]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,234,255,0.1)}
+    
+    .question-container{
+      background:rgba(0,234,255,0.05);border:1px solid rgba(0,234,255,0.15);border-radius:16px;padding:24px;margin:20px 0;text-align:center;position:relative;overflow:hidden;
+    }
+    .question-container::before{
+      content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,234,255,0.1),transparent);animation:shimmer 3s infinite;
+    }
+    @keyframes shimmer{0%{left:-100%}100%{left:100%}}
+    
+    .question{font-size:42px;font-family:'Orbitron',sans-serif;letter-spacing:2px;color:var(--text);position:relative;z-index:1;}
+    .question-number{font-size:14px;color:var(--accent);margin-bottom:8px;font-family:'Orbitron',sans-serif;}
+    
+    .input-row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:16px}
+    #answer{
+      background:rgba(255,255,255,0.1);color:var(--text);border:2px solid rgba(255,255,255,0.15);padding:12px 20px;border-radius:12px;font-size:18px;font-family:'Orbitron',sans-serif;width:180px;text-align:center;transition:all 0.3s;
+    }
+    #answer:focus{outline:none;border-color:var(--accent);box-shadow:0 0 20px rgba(0,234,255,0.2)}
+    #answer.correct{border-color:var(--accent2);box-shadow:0 0 20px rgba(74,222,128,0.3)}
+    #answer.wrong{border-color:var(--warning);box-shadow:0 0 20px rgba(248,113,113,0.3)}
+    
     button{
-      background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;padding:10px 18px;border-radius:12px;font-weight:700;cursor:pointer;color:#011316;transition:transform .2s, box-shadow .2s;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;padding:12px 24px;border-radius:12px;font-weight:700;cursor:pointer;color:#011316;font-size:14px;transition:all 0.2s;font-family:inherit;position:relative;overflow:hidden;
     }
-    button:hover{transform:translateY(-2px);box-shadow:0 0 15px rgba(0,234,255,0.4)}
-    .status{text-align:center;margin-top:14px;font-size:16px}
-    .hint{text-align:center;margin-top:10px;font-size:14px;color:#b2faff}
-    .scoreboard{display:flex;justify-content:space-between;margin-top:16px;align-items:center;flex-wrap:wrap}
-    .score{background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:10px;font-family:'Orbitron',sans-serif;margin:4px 0}
-    .progress-bar{height:8px;background:rgba(255,255,255,0.1);border-radius:5px;margin-top:14px;overflow:hidden}
-    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.4s ease}
-    .timer{background:rgba(255,255,255,0.1);height:14px;border-radius:8px;overflow:hidden;margin-top:12px;position:relative;}
-    .timer-fill{background:linear-gradient(90deg,var(--accent2),var(--accent));height:100%;width:100%;transition:width 1s linear;}
-    .timer-text{position:absolute;top:-28px;right:0;font-family:'Orbitron',sans-serif;font-size:14px;color:var(--accent);}
-    .confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;}
-    .particle{position:absolute;width:8px;height:8px;background:var(--accent);border-radius:50%;animation: fall 2s linear forwards}
-    @keyframes fall{to{transform:translateY(100vh) rotate(720deg);opacity:0}}
+    button::after{
+      content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,0.2);border-radius:50%;transform:translate(-50%,-50%);transition:width 0.3s,height 0.3s;
+    }
+    button:active::after{width:200%;height:200%}
+    button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,234,255,0.35)}
+    button:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+    
+    #skip{background:transparent;border:2px solid rgba(255,255,255,0.2);color:var(--text)}
+    #skip:hover:not(:disabled){border-color:var(--warning);color:var(--warning);box-shadow:0 0 15px rgba(248,113,113,0.2)}
+    
+    .timer-wrapper{margin-top:20px;position:relative;}
+    .timer{
+      height:10px;background:rgba(255,255,255,0.08);border-radius:8px;overflow:hidden;position:relative;
+    }
+    .timer-fill{
+      height:100%;width:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width 0.5s linear;border-radius:8px;
+    }
+    .timer-fill.warning{background:linear-gradient(90deg,var(--warning),#ff4444)}
+    .timer-fill.danger{animation:pulse 0.5s infinite;background:linear-gradient(90deg,#ff4444,var(--warning))}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+    .timer-text{
+      text-align:right;font-family:'Orbitron',sans-serif;font-size:13px;color:var(--accent);margin-bottom:4px;
+    }
+    
+    .status{
+      text-align:center;margin-top:16px;font-size:16px;font-weight:600;min-height:24px;transition:all 0.3s;
+    }
+    .status.correct{color:var(--accent2);text-shadow:0 0 10px rgba(74,222,128,0.4)}
+    .status.wrong{color:var(--warning);text-shadow:0 0 10px rgba(248,113,113,0.4)}
+    .status.timeout{color:var(--warning)}
+    
+    .hint{
+      text-align:center;margin-top:8px;font-size:14px;color:#b2faff;min-height:20px;opacity:0;transition:opacity 0.3s;
+    }
+    .hint.visible{opacity:1}
+    
+    .progress-section{margin-top:20px}
+    .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .progress-bar{height:6px;background:rgba(255,255,255,0.08);border-radius:5px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.5s ease;border-radius:5px}
+    
+    .scoreboard{
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);
+    }
+    .score-pill{
+      background:rgba(255,255,255,0.08);padding:8px 16px;border-radius:12px;font-family:'Orbitron',sans-serif;font-size:13px;display:flex;align-items:center;gap:6px;
+    }
+    .score-pill .label{color:var(--muted);font-size:11px}
+    .score-pill .value{color:var(--accent)}
+    .streak{color:var(--gold)!important}
+    
+    #returnBtn{
+      background:rgba(255,255,255,0.08);color:var(--text);font-size:13px;padding:8px 16px;
+    }
+    #returnBtn:hover{background:rgba(255,255,255,0.12)}
+    
+    .confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:1000}
+    .particle{
+      position:absolute;width:8px;height:8px;border-radius:50%;animation:fall 2.5s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+    }
+    @keyframes fall{
+      0%{transform:translateY(-10px) rotate(0deg);opacity:1}
+      100%{transform:translateY(100vh) rotate(720deg);opacity:0}
+    }
+    
+    .game-over{
+      position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(4,10,20,0.95);display:none;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(10px);
+    }
+    .game-over.active{display:flex}
+    .game-over-content{
+      background:rgba(255,255,255,0.05);border:1px solid rgba(0,234,255,0.2);border-radius:24px;padding:40px;max-width:400px;width:90%;text-align:center;animation:slideUp 0.5s ease;
+    }
+    @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .game-over h2{font-family:'Orbitron',sans-serif;color:var(--accent);font-size:28px;margin-bottom:8px}
+    .final-score{font-size:48px;font-family:'Orbitron',sans-serif;color:var(--accent2);margin:16px 0}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+    .stat-box{background:rgba(255,255,255,0.05);padding:12px;border-radius:10px}
+    .stat-box .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase}
+    .stat-box .stat-value{font-size:20px;font-family:'Orbitron',sans-serif;color:var(--text);margin-top:4px}
+    
+    .pulse{animation:pulse-scale 0.3s ease}
+    @keyframes pulse-scale{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+    
+    @media (max-width:600px){
+      .card{padding:20px}
+      h1{font-size:24px}
+      .question{font-size:32px}
+      .settings-grid{grid-template-columns:1fr 1fr}
+    }
   </style>
 </head>
 <body>
-  <div class="card" role="application">
+  <div class="card" role="application" aria-label="Math Games Application">
     <h1>⚡ Math Games ⚡</h1>
-    <p class="lead">Beat the timer and level up your brain with glowing math challenges!</p>
+    <p class="lead">Beat the timer and level up your brain!</p>
 
-    <div class="row">
-      <label for="mode">Mode:</label>
-      <select id="mode">
-        <option value="mixed">Mixed (+ − × ÷)</option>
-        <option value="add">Addition</option>
-        <option value="sub">Subtraction</option>
-        <option value="mul">Multiplication</option>
-        <option value="div">Division</option>
-      </select>
-
-      <label for="count">Questions:</label>
-      <input id="count" type="number" min="1" max="30" value="10">
-
-      <label for="startDiff">Start difficulty:</label>
-      <select id="startDiff">
-        <option value="1">1 (Easy)</option>
-        <option value="3">3 (Medium)</option>
-        <option value="5">5 (Hard)</option>
-      </select>
-
-      <label for="timer">Time (sec):</label>
-      <input id="timerValue" type="number" min="5" max="60" value="15" style="width:70px">
+    <div class="settings-grid">
+      <div class="setting-group">
+        <label for="mode">Mode</label>
+        <select id="mode" aria-label="Select game mode">
+          <option value="mixed">Mixed (+ − × ÷)</option>
+          <option value="add">Addition</option>
+          <option value="sub">Subtraction</option>
+          <option value="mul">Multiplication</option>
+          <option value="div">Division</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label for="count">Questions</label>
+        <input id="count" type="number" min="1" max="50" value="10" aria-label="Number of questions">
+      </div>
+      <div class="setting-group">
+        <label for="startDiff">Difficulty</label>
+        <select id="startDiff" aria-label="Starting difficulty">
+          <option value="1">1 (Easy)</option>
+          <option value="2">2</option>
+          <option value="3">3 (Medium)</option>
+          <option value="4">4</option>
+          <option value="5">5 (Hard)</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label for="timerValue">Time (sec)</label>
+        <input id="timerValue" type="number" min="5" max="120" value="15" aria-label="Time per question in seconds">
+      </div>
     </div>
 
-    <div class="question" id="question">Press Start to Begin</div>
-
-    <div class="row">
-      <input id="answer" type="number" placeholder="Your answer" inputmode="numeric">
-      <button id="start">Start</button>
-      <button id="submit" disabled>Submit</button>
-      <button id="skip" disabled>Skip</button>
+    <div class="question-container">
+      <div class="question-number" id="qNumber">Ready?</div>
+      <div class="question" id="question">Press Start to Begin</div>
     </div>
 
-    <div class="timer"><div class="timer-fill" id="timerFill"></div><div class="timer-text" id="timerText">00s</div></div>
+    <div class="input-row">
+      <input id="answer" type="number" placeholder="Answer" inputmode="numeric" aria-label="Your answer" autocomplete="off">
+      <button id="start" aria-label="Start game">Start</button>
+      <button id="submit" disabled aria-label="Submit answer">Submit</button>
+      <button id="skip" disabled aria-label="Skip question">Skip</button>
+    </div>
 
-    <div class="status" id="status"></div>
-    <div class="hint" id="hint"></div>
+    <div class="timer-wrapper">
+      <div class="timer-text" id="timerText">15s</div>
+      <div class="timer"><div class="timer-fill" id="timerFill"></div></div>
+    </div>
 
-    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+    <div class="hint" id="hint" role="status" aria-live="polite"></div>
+
+    <div class="progress-section">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="progressText">0 / 10</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    </div>
 
     <div class="scoreboard">
-      <div class="score" id="scoreDisplay">Score: 0 / 0</div>
-      <div id="difficultyDisplay" class="score">Difficulty: 1</div>
-      <button id="returnBtn" onclick="location.href='index.html'">⬅ Return to Profile🏠</button>
+      <div class="score-pill">
+        <span class="label">Score</span>
+        <span class="value" id="scoreDisplay">0</span>
+      </div>
+      <div class="score-pill">
+        <span class="label">Streak</span>
+        <span class="value streak" id="streakDisplay">0</span>
+      </div>
+      <div class="score-pill">
+        <span class="label">Level</span>
+        <span class="value" id="difficultyDisplay">1</span>
+      </div>
+      <button id="returnBtn" onclick="location.href='index.html'">⬅ Home</button>
     </div>
   </div>
 
-  <div class="confetti" id="confetti"></div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <div class="game-over" id="gameOver" aria-hidden="true">
+    <div class="game-over-content">
+      <h2>🏆 Quest Complete!</h2>
+      <div class="final-score" id="finalScore">0/0</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Accuracy</div>
+          <div class="stat-value" id="finalAccuracy">0%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Best Streak</div>
+          <div class="stat-value" id="finalStreak">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Max Level</div>
+          <div class="stat-value" id="finalLevel">1</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Time Bonus</div>
+          <div class="stat-value" id="finalBonus">0</div>
+        </div>
+      </div>
+      <button id="playAgain" style="width:100%;margin-top:8px">Play Again</button>
+    </div>
+  </div>
 
   <script>
-    const state={score:0,total:0,asked:0,qCount:10,difficulty:1,mode:'mixed',current:null,timer:null,timeLeft:15};
+    const state={
+      score:0,total:0,asked:0,qCount:10,difficulty:1,maxDifficulty:1,
+      mode:'mixed',current:null,timer:null,timeLeft:15,maxTime:15,
+      streak:0,bestStreak:0,timeBonus:0,isRunning:false
+    };
+    
     const el=id=>document.getElementById(id);
-    const questionEl=el('question'),statusEl=el('status'),hintEl=el('hint'),scoreEl=el('scoreDisplay'),diffEl=el('difficultyDisplay'),progressEl=el('progress'),timerFill=el('timerFill'),timerText=el('timerText');
+    const questionEl=el('question'),qNumberEl=el('qNumber'),
+          statusEl=el('status'),hintEl=el('hint'),
+          scoreEl=el('scoreDisplay'),streakEl=el('streakDisplay'),
+          diffEl=el('difficultyDisplay'),progressEl=el('progress'),
+          progressTextEl=el('progressText'),
+          timerFill=el('timerFill'),timerText=el('timerText'),
+          answerInput=el('answer'),gameOverEl=el('gameOver');
 
     function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 
-    function makeOperands(d){
-      const ranges={1:[1,9],2:[5,20],3:[12,60],4:[30,200],5:[100,800]};
-      const [lo,hi]=ranges[Math.max(1,Math.min(5,d))];
-      return [rand(lo,hi),rand(lo,hi)];
+    function getRanges(d){
+      // Balanced difficulty scaling
+      const ranges={
+        1:{add:[1,9],sub:[1,9],mul:[1,5],div:[1,5]},
+        2:{add:[5,20],sub:[1,20],mul:[2,9],div:[2,9]},
+        3:{add:[10,50],sub:[5,50],mul:[3,12],div:[3,12]},
+        4:{add:[25,150],sub:[10,150],mul:[5,20],div:[5,20]},
+        5:{add:[50,500],sub:[20,500],mul:[10,30],div:[10,30]}
+      };
+      return ranges[Math.max(1,Math.min(5,d))]||ranges[1];
     }
 
     function generate(){
       const ops=['+','-','*','/'];
-      const m=state.mode==='mixed'?ops[rand(0,3)]:state.mode==='add'?'+':state.mode==='sub'?'-':state.mode==='mul'?'*':'/';
-      let [a,b]=makeOperands(state.difficulty);
+      const m=state.mode==='mixed'?ops[rand(0,3)]
+           :state.mode==='add'?'+'
+           :state.mode==='sub'?'-'
+           :state.mode==='mul'?'*'
+           :'/';
+      
+      const ranges=getRanges(state.difficulty);
+      let a,b;
 
-      if(m==='-'){if(b>a)[a,b]=[b,a];}
-      if(m==='/'){
-        b=rand(1,Math.max(1,Math.floor(b/2)));
-        a=a*b; // ensures division gives integer result
+      switch(m){
+        case '+':
+          [a,b]=[rand(ranges.add[0],ranges.add[1]),rand(ranges.add[0],ranges.add[1])];
+          break;
+        case '-':
+          a=rand(ranges.sub[0],ranges.sub[1]);
+          b=rand(ranges.sub[0],ranges.sub[1]);
+          if(b>a)[a,b]=[b,a]; // Ensure non-negative at lower levels
+          if(state.difficulty>=4 && rand(0,1)===1){
+            // Allow negatives at high difficulty sometimes
+            [a,b]=[rand(ranges.sub[0],ranges.sub[1]),rand(ranges.sub[0],ranges.sub[1])];
+          }
+          break;
+        case '*':
+          [a,b]=[rand(ranges.mul[0],ranges.mul[1]),rand(ranges.mul[0],ranges.mul[1])];
+          break;
+        case '/':
+          b=rand(Math.max(2,ranges.div[0]),ranges.div[1]);
+          const ans=rand(Math.max(1,ranges.div[0]),ranges.div[1]);
+          a=b*ans; // Ensure clean division
+          break;
       }
 
-      const correct=Number(eval(`${a}${m}${b}`));
-      return {a,b,op:m,q:`${a} ${m} ${b} = ?`,correct:isNaN(correct)?0:correct};
+      let correct;
+      switch(m){
+        case '+':correct=a+b;break;
+        case '-':correct=a-b;break;
+        case '*':correct=a*b;break;
+        case '/':correct=a/b;break;
+        default:correct=0;
+      }
+
+      return {a,b,op:m,q:`${a} ${m} ${b} = ?`,correct:correct};
     }
 
     function update(){
-      scoreEl.textContent=`Score: ${state.score} / ${state.total}`;
-      diffEl.textContent=`Difficulty: ${state.difficulty}`;
-      progressEl.style.width=`${(state.asked/state.qCount)*100}%`;
+      scoreEl.textContent=state.score;
+      streakEl.textContent=state.streak;
+      diffEl.textContent=state.difficulty;
+      const pct=(state.asked/state.qCount)*100;
+      progressEl.style.width=`${pct}%`;
+      progressTextEl.textContent=`${state.asked} / ${state.qCount}`;
     }
 
     function startTimer(){
       clearInterval(state.timer);
-      state.timeLeft=parseInt(el('timerValue').value)||15;
+      state.maxTime=parseInt(el('timerValue').value)||15;
+      state.timeLeft=state.maxTime;
       timerText.textContent=`${state.timeLeft}s`;
       timerFill.style.width='100%';
-      timerFill.style.background='linear-gradient(90deg,var(--accent2),var(--accent))';
+      timerFill.className='timer-fill';
+      
       state.timer=setInterval(()=>{
         state.timeLeft--;
         timerText.textContent=`${state.timeLeft}s`;
-        timerFill.style.width=`${(state.timeLeft/parseInt(el('timerValue').value))*100}%`;
-        if(state.timeLeft<=3){timerFill.style.background='linear-gradient(90deg,var(--warning),#ff0000)'}
-        if(state.timeLeft<=0){clearInterval(state.timer);statusEl.textContent='⏰ Time up!';skip();}
+        const pct=(state.timeLeft/state.maxTime)*100;
+        timerFill.style.width=`${pct}%`;
+        
+        if(state.timeLeft<=5){
+          timerFill.className='timer-fill warning';
+        }
+        if(state.timeLeft<=3){
+          timerFill.className='timer-fill danger';
+        }
+        if(state.timeLeft<=0){
+          clearInterval(state.timer);
+          statusEl.textContent='⏰ Time up!';
+          statusEl.className='status timeout';
+          handleTimeout();
+        }
       },1000);
     }
 
+    function handleTimeout(){
+      state.total++;
+      state.streak=0;
+      state.difficulty=Math.max(1,state.difficulty-1);
+      update();
+      hintEl.textContent=`${state.current.a} ${state.current.op} ${state.current.b} = ${state.current.correct}`;
+      hintEl.className='hint visible';
+      setTimeout(next,1500);
+    }
+
     function next(){
+      hintEl.className='hint';
+      hintEl.textContent='';
+      statusEl.className='status';
+      answerInput.className='';
+      
       if(state.asked>=state.qCount){
-        questionEl.textContent=`🏁 Quest Complete! Final Score: ${state.score}/${state.total}`;
-        el('submit').disabled=true;el('skip').disabled=true;
-        celebrate();clearInterval(state.timer);
+        endGame();
         return;
       }
+      
       state.current=generate();
       if(!state.current||isNaN(state.current.correct)){
         state.current={a:0,b:0,op:'+',correct:0,q:'Error generating question'};
       }
-      questionEl.textContent=`Q${state.asked+1}: ${state.current.q}`;
+      
+      qNumberEl.textContent=`Question ${state.asked+1} of ${state.qCount}`;
+      questionEl.textContent=state.current.q;
       state.asked++;
-      el('answer').value='';
-      el('answer').focus();
+      answerInput.value='';
+      answerInput.focus();
       update();
       startTimer();
     }
 
-    function celebrate(){
-      for(let i=0;i<40;i++){
+    function celebrate(intensity=40){
+      const colors=['#00eaff','#4ade80','#fbbf24','#f472b6','#a78bfa'];
+      for(let i=0;i<intensity;i++){
         const p=document.createElement('div');
         p.className='particle';
         p.style.left=rand(0,100)+'%';
-        p.style.background=`hsl(${rand(150,250)},100%,70%)`;
+        p.style.top='-10px';
+        p.style.width=(rand(4,10))+'px';
+        p.style.height=p.style.width;
+        p.style.background=colors[rand(0,colors.length-1)];
+        p.style.animationDuration=(rand(15,30)/10)+'s';
+        p.style.animationDelay=(rand(0,10)/10)+'s';
         el('confetti').appendChild(p);
-        setTimeout(()=>p.remove(),2000);
+        setTimeout(()=>p.remove(),3000);
       }
     }
 
     function submit(){
-      if(!state.current){statusEl.textContent='No question yet! Press Start.';return;}
-      const val=el('answer').value.trim();
-      if(val===''){statusEl.textContent='Enter an answer or skip.';return;}
-      const ans=Number(val),c=Number(state.current.correct);
-      if(isNaN(ans)||isNaN(c)){statusEl.textContent='Invalid input!';return;}
+      if(!state.isRunning||!state.current){
+        statusEl.textContent='Press Start to begin!';
+        return;
+      }
+      
+      const val=answerInput.value.trim();
+      if(val===''){
+        statusEl.textContent='Enter an answer or press Skip';
+        answerInput.focus();
+        return;
+      }
+      
+      const ans=Number(val);
+      const correct=Number(state.current.correct);
+      
+      if(isNaN(ans)){
+        statusEl.textContent='Please enter a valid number';
+        answerInput.value='';
+        answerInput.focus();
+        return;
+      }
+
       state.total++;
       clearInterval(state.timer);
-      if(ans===c){
+      
+      if(ans===correct){
+        // Correct!
         state.score++;
-        statusEl.textContent='🔥 Correct! Level up!';
-        state.difficulty=Math.min(5,state.difficulty+1);
-        celebrate();
+        state.streak++;
+        if(state.streak>state.bestStreak)state.bestStreak=state.streak;
+        
+        // Time bonus for fast answers
+        const bonus=Math.ceil(state.timeLeft/3);
+        state.timeBonus+=bonus;
+        
+        statusEl.textContent=`🔥 Correct! +${bonus} time bonus`;
+        statusEl.className='status correct';
+        answerInput.className='correct';
+        
+        // Level up every 2 correct answers, cap at 5
+        if(state.streak%2===0){
+          state.difficulty=Math.min(5,state.difficulty+1);
+          if(state.difficulty>state.maxDifficulty)state.maxDifficulty=state.difficulty;
+        }
+        
+        celebrate(30);
       }else{
-        statusEl.textContent=`❌ Wrong! Correct: ${c}`;
+        // Wrong
+        statusEl.textContent=`❌ Wrong! Answer: ${correct}`;
+        statusEl.className='status wrong';
+        answerInput.className='wrong';
+        state.streak=0;
         state.difficulty=Math.max(1,state.difficulty-1);
       }
-      hintEl.textContent=`${state.current.a} ${state.current.op} ${state.current.b} = ${c}`;
+      
+      hintEl.textContent=`${state.current.a} ${state.current.op} ${state.current.b} = ${correct}`;
+      hintEl.className='hint visible';
+      update();
+      setTimeout(next,1200);
+    }
+
+    function skip(){
+      if(!state.isRunning||!state.current){
+        statusEl.textContent='No active question!';
+        return;
+      }
+      
+      state.total++;
+      state.streak=0;
+      clearInterval(state.timer);
+      statusEl.textContent='⏭ Skipped!';
+      statusEl.className='status';
+      state.difficulty=Math.max(1,state.difficulty-1);
+      hintEl.textContent=`${state.current.a} ${state.current.op} ${state.current.b} = ${state.current.correct}`;
+      hintEl.className='hint visible';
       update();
       setTimeout(next,1000);
     }
 
-    function skip(){
-      if(!state.current){statusEl.textContent='No question to skip!';return;}
-      state.total++;
-      clearInterval(state.timer);
-      statusEl.textContent='⏭ Skipped! Try again next time.';
-      state.difficulty=Math.max(1,state.difficulty-1);
-      update();
-      setTimeout(next,800);
-    }
-
     function start(){
-      state.qCount=parseInt(el('count').value)||10;
+      state.qCount=Math.min(50,Math.max(1,parseInt(el('count').value)||10));
       state.difficulty=parseInt(el('startDiff').value)||1;
+      state.maxDifficulty=state.difficulty;
       state.mode=el('mode').value;
-      state.score=0;state.total=0;state.asked=0;state.current=null;
-      statusEl.textContent='';hintEl.textContent='';
-      el('submit').disabled=false;el('skip').disabled=false;
+      state.score=0;state.total=0;state.asked=0;state.streak=0;state.bestStreak=0;
+      state.timeBonus=0;state.current=null;state.isRunning=true;
+      
+      statusEl.textContent='';hintEl.textContent='';hintEl.className='hint';
+      answerInput.className='';
+      gameOverEl.className='game-over';
+      gameOverEl.setAttribute('aria-hidden','true');
+      
+      el('submit').disabled=false;
+      el('skip').disabled=false;
+      el('start').textContent='Restart';
+      
       next();
     }
 
+    function endGame(){
+      state.isRunning=false;
+      clearInterval(state.timer);
+      questionEl.textContent='🏁 Complete!';
+      qNumberEl.textContent='Great job!';
+      el('submit').disabled=true;
+      el('skip').disabled=true;
+      
+      const accuracy=state.total>0?Math.round((state.score/state.total)*100):0;
+      
+      el('finalScore').textContent=`${state.score}/${state.total}`;
+      el('finalAccuracy').textContent=`${accuracy}%`;
+      el('finalStreak').textContent=state.bestStreak;
+      el('finalLevel').textContent=state.maxDifficulty;
+      el('finalBonus').textContent=`+${state.timeBonus}`;
+      
+      gameOverEl.className='game-over active';
+      gameOverEl.setAttribute('aria-hidden','false');
+      celebrate(60);
+    }
+
+    // Event listeners
     el('start').onclick=start;
     el('submit').onclick=submit;
     el('skip').onclick=skip;
-    el('answer').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
+    el('playAgain').onclick=()=>{
+      gameOverEl.className='game-over';
+      gameOverEl.setAttribute('aria-hidden','true');
+      start();
+    };
+
+    answerInput.addEventListener('keydown',e=>{
+      if(e.key==='Enter')submit();
+      if(e.key===' '||e.code==='Space'){
+        e.preventDefault();
+        skip();
+      }
+    });
+
+    // Prevent negative input for some browsers
+    answerInput.addEventListener('input',e=>{
+      if(answerInput.value.length>8)answerInput.value=answerInput.value.slice(0,8);
+    });
+
     update();
   </script>
 </body>
