@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Portfolio of M. Jibreen, a beginner developer from Indonesia building web apps and Python projects.">
 <title>Jibs — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-deep:#060d1a;
@@ -19,14 +23,17 @@
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth; background:var(--bg-deep);}
   body{
     background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 50%, #0c1a30 100%);
+    background-attachment: fixed;
     color:var(--text);
     min-height:100vh;
+    min-height:100dvh;
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
   }
+  :focus-visible{ outline:2px solid var(--accent2); outline-offset:3px; }
 
   /* ambient glow */
   .glow{
@@ -55,11 +62,10 @@
     content:''; position:absolute; top:0; left:0; right:0; height:2px;
     background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
   }
-  .avatar-wrap{
-    position:relative; flex-shrink:0;
-  }
+  .avatar-wrap{ position:relative; flex-shrink:0; }
   .avatar{
-    width:120px; height:120px; border-radius:20px; object-fit:cover;
+    display:block; width:120px; height:120px; border-radius:20px; object-fit:cover;
+    background:var(--bg-card);
     border:2px solid rgba(124,92,255,0.3);
     box-shadow: 0 0 30px rgba(124,92,255,0.2);
     transition: transform 0.4s ease;
@@ -67,24 +73,21 @@
   .avatar-wrap:hover .avatar{ transform: scale(1.05); }
   .status-dot{
     position:absolute; bottom:6px; right:6px; width:16px; height:16px;
-    background:#22c55e; border-radius:50%; border:3px solid var(--bg-card);
+    background:#f59e0b; border-radius:50%; border:3px solid var(--bg-card);
     animation: pulse 2s infinite;
   }
   @keyframes pulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4);}
-    50%{box-shadow:0 0 0 8px rgba(34,197,94,0);}
+    0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4);}
+    50%{box-shadow:0 0 0 8px rgba(245,158,11,0);}
   }
   .hero-text h1{
     font-size:2.2rem; font-weight:700; letter-spacing:-0.02em;
     background: linear-gradient(90deg, #fff, #c4b5fd);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
   }
-  .hero-text .tagline{
-    color:var(--muted); font-size:1.05rem; margin-top:6px;
-  }
-  .hero-badges{
-    display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;
-  }
+  .hero-text .tagline{ color:var(--muted); font-size:1.05rem; margin-top:6px; }
+  .hero-badges{ display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
   .badge{
     padding:6px 14px; border-radius:999px; font-size:0.82rem; font-weight:500;
     background: var(--glass); border:1px solid rgba(255,255,255,0.06);
@@ -94,11 +97,14 @@
     background: rgba(124,92,255,0.12); color:#c4b5fd; border-color:rgba(124,92,255,0.25);
     transform: translateY(-2px);
   }
+  @media(max-width:600px){
+    .hero{ flex-direction:column; text-align:center; padding:32px 20px; }
+    .hero-badges{ justify-content:center; }
+    .hero-text h1{ font-size:1.8rem; }
+  }
 
   /* GRID LAYOUT */
-  .grid-2{
-    display:grid; grid-template-columns: 1fr 1fr; gap:24px;
-  }
+  .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:24px; }
   @media(max-width:800px){ .grid-2{grid-template-columns:1fr;} }
 
   /* CARDS */
@@ -127,24 +133,18 @@
     display:grid; place-items:center; font-size:1rem;
     background: linear-gradient(135deg, rgba(124,92,255,0.15), rgba(42,209,209,0.1));
   }
+  .section-gap{ margin-top:24px; }
 
   /* ABOUT */
-  .about-text{
-    color:var(--muted); line-height:1.7; font-size:0.95rem;
-  }
+  .about-text{ color:var(--muted); line-height:1.7; font-size:0.95rem; }
 
   /* SKILLS */
-  .skill{
-    margin-bottom:18px;
-  }
-  .skill-top{
-    display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
-  }
+  .skill{ margin-bottom:18px; }
+  .skill:last-child{ margin-bottom:0; }
+  .skill-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
   .skill-name{ font-size:0.9rem; font-weight:500; }
   .skill-pct{ font-size:0.8rem; color:var(--muted); font-variant-numeric: tabular-nums; }
-  .skill-bar-bg{
-    height:8px; background:rgba(255,255,255,0.04); border-radius:999px; overflow:hidden;
-  }
+  .skill-bar-bg{ height:8px; background:rgba(255,255,255,0.04); border-radius:999px; overflow:hidden; }
   .skill-bar-fill{
     height:100%; border-radius:999px;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
@@ -163,7 +163,8 @@
     border-bottom:1px solid rgba(255,255,255,0.03);
   }
   .info-row:last-child{ border-bottom:none; }
-  .info-icon{ width:36px; height:36px; border-radius:10px; flex-shrink:0;
+  .info-icon{
+    width:36px; height:36px; border-radius:10px; flex-shrink:0;
     display:grid; place-items:center; font-size:1rem;
     background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04);
   }
@@ -172,10 +173,10 @@
 
   /* PROJECTS */
   .projects-grid{
-    display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:20px;
   }
-  @media(max-width:800px){ .projects-grid{grid-template-columns:1fr;} }
   .project-card{
+    display:flex; flex-direction:column; align-items:flex-start;
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
     border-radius:14px; padding:22px; border:1px solid rgba(255,255,255,0.04);
     transition: all 0.35s ease; position:relative; overflow:hidden;
@@ -198,7 +199,7 @@
     border:1px solid rgba(255,255,255,0.05);
   }
   .project-title{ font-size:1.05rem; font-weight:600; margin-bottom:8px; }
-  .project-desc{ color:var(--muted); font-size:0.88rem; line-height:1.5; margin-bottom:16px; }
+  .project-desc{ color:var(--muted); font-size:0.88rem; line-height:1.5; margin-bottom:16px; flex-grow:1; }
   .project-btn{
     display:inline-flex; align-items:center; gap:8px;
     padding:8px 18px; border-radius:10px; font-size:0.85rem; font-weight:500;
@@ -216,9 +217,7 @@
   .coming-soon .project-title{ color:var(--muted); }
 
   /* FOOTER */
-  footer{
-    text-align:center; padding:40px 0 20px; color:var(--muted); font-size:0.85rem;
-  }
+  footer{ text-align:center; padding:40px 0 20px; color:var(--muted); font-size:0.85rem; }
   footer .heart{ color:#ef4444; display:inline-block; animation: heartbeat 1.5s infinite; }
   @keyframes heartbeat{
     0%,100%{transform:scale(1);}
@@ -229,43 +228,131 @@
 
   /* floating particles */
   .particle{
-    position:fixed; width:4px; height:4px; background:rgba(124,92,255,0.3);
+    position:fixed; bottom:0; background:rgba(124,92,255,0.3);
     border-radius:50%; pointer-events:none; z-index:0;
-    animation: floatUp linear infinite;
+    animation: floatUp linear forwards;
   }
   @keyframes floatUp{
-    0%{transform:translateY(100vh) scale(0); opacity:0;}
-    10%{opacity:1;}
-    90%{opacity:1;}
-    100%{transform:translateY(-10vh) scale(1); opacity:0;}
+    0%{transform:translateY(0) scale(0); opacity:0;}
+    10%{opacity:var(--p-opacity, 0.3);}
+    90%{opacity:var(--p-opacity, 0.3);}
+    100%{transform:translateY(-110vh) scale(1); opacity:0;}
   }
 
-  /* smooth reveal */
-  .reveal{
+  /* smooth reveal (only hides content when JS is running) */
+  .js .reveal{
     opacity:0; transform: translateY(24px);
     transition: opacity 0.7s ease, transform 0.7s ease;
   }
-  .reveal.visible{ opacity:1; transform: translateY(0); }
+  .js .reveal.visible{ opacity:1; transform: translateY(0); }
+
+  /* AVATAR EASTER EGG */
+  .avatar-wrap{ cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent; border-radius:20px; }
+  .avatar-wrap.squish .avatar{ animation: squish .35s ease; }
+  .avatar-wrap.spin .avatar{ animation: spin 1.4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes squish{
+    0%{transform:scale(1);} 30%{transform:scale(.86,1.12);}
+    60%{transform:scale(1.12,.92);} 100%{transform:scale(1);}
+  }
+  @keyframes spin{
+    0%{transform:rotate(0) scale(1);} 50%{transform:rotate(360deg) scale(1.3);}
+    100%{transform:rotate(720deg) scale(1);}
+  }
+  .bubble{
+    position:absolute; left:0; top:-10px; transform:translateY(-100%) scale(.9);
+    background:var(--bg-card); color:var(--text); border:1px solid rgba(124,92,255,0.35);
+    padding:6px 12px; border-radius:12px; font-size:.78rem; font-weight:500; white-space:nowrap;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    box-shadow:0 6px 20px rgba(0,0,0,.4); z-index:5;
+  }
+  .bubble.show{ opacity:1; transform:translateY(-100%) scale(1); }
+  .hint{ font-size:.72rem; color:var(--muted); margin-top:8px; text-align:center; opacity:.8; }
+  .pop-emoji{ position:fixed; z-index:50; pointer-events:none; font-size:1.5rem; will-change:transform,opacity; }
+  .confetti{ position:fixed; top:-16px; z-index:60; pointer-events:none; width:8px; height:14px; border-radius:2px; }
+  .secret-toast{
+    position:fixed; left:50%; bottom:32px; transform:translate(-50%,40px); z-index:70;
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;
+    padding:14px 22px; border-radius:14px; font-weight:600; font-size:.95rem; text-align:center;
+    box-shadow:0 12px 40px rgba(0,0,0,.5); opacity:0; pointer-events:none;
+    transition:opacity .4s ease, transform .4s ease; max-width:90vw;
+  }
+  .secret-toast.show{ opacity:1; transform:translate(-50%,0); }
+  body.party .glow{ animation: hue 1.2s linear infinite; opacity:.35; }
+  body.party .hero{ border-color:rgba(255,255,255,.25); }
+  @keyframes hue{ to{ filter:blur(120px) hue-rotate(360deg); } }
+
+  /* JUMPSCARE */
+  .scare{
+    position:fixed; inset:0; z-index:100; background:#000;
+    display:grid; place-items:center; overflow:hidden; cursor:pointer;
+    opacity:0; visibility:hidden; transition:opacity .08s linear;
+  }
+  .scare.show{ opacity:1; visibility:visible; }
+  .scare::after{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 40%, rgba(180,0,0,.65) 100%);
+  }
+  .scare-inner{ position:relative; display:grid; place-items:center; gap:14px; padding:16px; }
+  .scare.show .scare-inner{ animation: scareShake .07s linear infinite .3s; }
+  .scare img{
+    width:min(90vmin,720px); height:auto; max-height:80vh; object-fit:contain; border-radius:12px;
+    transform:scale(.15);
+  }
+  .scare.show img{ animation: scareZoom .3s cubic-bezier(.2,1.8,.4,1) forwards; }
+  .scare-emoji{ font-size:min(40vmin,260px); display:none; }
+  .scare-text{
+    position:relative; z-index:2; color:#fff; font-weight:700; letter-spacing:.04em;
+    font-size:clamp(1.6rem,7vw,3.2rem); text-shadow:0 0 18px #f00, 0 0 40px #900;
+    transform:scale(.3); opacity:0;
+  }
+  .scare.show .scare-text{ animation: scareText .35s .1s cubic-bezier(.2,1.8,.4,1) forwards; }
+  .scare-hint{ position:absolute; bottom:18px; left:0; right:0; text-align:center; color:rgba(255,255,255,.55); font-size:.78rem; z-index:3; }
+  .scare-flash{ position:fixed; inset:0; z-index:101; background:#fff; opacity:0; pointer-events:none; }
+  .scare-flash.go{ animation: scareFlash .18s ease-out; }
+  @keyframes scareZoom{ to{ transform:scale(1); } }
+  @keyframes scareText{ to{ transform:scale(1); opacity:1; } }
+  @keyframes scareShake{
+    0%{transform:translate(0,0);} 25%{transform:translate(-7px,4px);}
+    50%{transform:translate(6px,-5px);} 75%{transform:translate(-4px,-6px);} 100%{transform:translate(5px,5px);}
+  }
+  @keyframes scareFlash{ 0%{opacity:.9;} 100%{opacity:0;} }
+
+  /* respect reduced-motion preferences */
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *, *::before, *::after{
+      animation-duration:0.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:0.01ms !important;
+    }
+    .particle{ display:none; }
+  }
 </style>
+<script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
 
 <div class="glow glow-1"></div>
 <div class="glow glow-2"></div>
 
-<div class="container">
+<main class="container">
 
   <!-- HERO -->
   <section class="hero reveal">
-    <div class="avatar-wrap">
-      <img class="avatar" src="https://media.tenor.com/prn7gJhr5xgAAAAj/kirby-headphones.gif" alt="Jibs avatar">
-      <div class="status-dot"></div>
+    <div class="avatar-wrap" id="avatarBtn" role="button" tabindex="0" aria-label="Click the avatar for a surprise">
+      <div class="bubble" id="bubble" role="status" aria-live="polite"></div>
+      <img class="avatar"
+           src="avatar.gif"
+           data-fallback="https://media.tenor.com/prn7gJhr5xgAAAAj/kirby-headphones.gif"
+           alt="Jibs avatar" width="120" height="120" loading="eager"
+           onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;delete this.dataset.fallback;}else{this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22%3E%3Crect width=%22120%22 height=%22120%22 fill=%22%230d1b2e%22/%3E%3Ctext x=%2260%22 y=%2276%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22%23c4b5fd%22 font-family=%22sans-serif%22 font-weight=%22700%22%3EMJ%3C/text%3E%3C/svg%3E';}">
+      <div class="status-dot" title="Currently busy"></div>
+      <div class="hint">Click me!</div>
     </div>
     <div class="hero-text">
       <h1>M. Jibreen</h1>
-      <p class="tagline">Beginner Developer building imaginary things.</p>
+      <p class="tagline">Beginner developer building imaginary things.</p>
       <div class="hero-badges">
-        <span class="badge">2+ yrs Experience</span>
+        <span class="badge">2+ yrs experience</span>
         <span class="badge">Somewhere in Indonesia</span>
         <span class="badge">#Ilovecodesomething</span>
       </div>
@@ -274,66 +361,57 @@
 
   <div class="grid-2">
     <!-- ABOUT -->
-    <div class="card reveal">
-      <div class="card-title">
-        <div class="icon">👋</div>
-        About Me
-      </div>
+    <section class="card reveal">
+      <h2 class="card-title"><span class="icon" aria-hidden="true">👋</span>About me</h2>
       <p class="about-text">
-        Hi! I'm a young developer deeply interested in coding and exploring new programming languages and web development tools. I love creating beautiful, functional web apps and Python projects :D
+        Hi! I'm a young developer deeply interested in coding and exploring new programming languages and web development tools. I love creating beautiful, functional web apps and Python projects, plus IoT projects with Arduino and ESP32 :D
       </p>
-    </div>
+    </section>
 
     <!-- QUICK INFO -->
-    <div class="card reveal">
-      <div class="card-title">
-        <div class="icon">📋</div>
-        Quick Info
-      </div>
+    <section class="card reveal">
+      <h2 class="card-title"><span class="icon" aria-hidden="true">📋</span>Quick info</h2>
       <div class="info-row">
-        <div class="info-icon">🟢</div>
+        <div class="info-icon" aria-hidden="true">🟠</div>
         <div>
           <div class="info-label">Availability</div>
           <div class="info-value">Busy ;-;</div>
         </div>
       </div>
       <div class="info-row">
-        <div class="info-icon">🌐</div>
+        <div class="info-icon" aria-hidden="true">🌐</div>
         <div>
           <div class="info-label">Languages</div>
-          <div class="info-value">English, Indonesia, France</div>
+          <div class="info-value">English, Indonesian, French</div>
         </div>
       </div>
       <div class="info-row">
-        <div class="info-icon">🎓</div>
+        <div class="info-icon" aria-hidden="true">🎓</div>
         <div>
           <div class="info-label">Education</div>
-          <div class="info-value">High School</div>
+          <div class="info-value">High school</div>
         </div>
       </div>
       <div class="info-row">
-        <div class="info-icon">🎮</div>
+        <div class="info-icon" aria-hidden="true">🎮</div>
         <div>
           <div class="info-label">Hobbies</div>
-          <div class="info-value">Coding, Games, Chess</div>
+          <div class="info-value">Coding, games, chess</div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 
   <!-- SKILLS -->
-  <div class="card reveal" style="margin-top:24px;">
-    <div class="card-title">
-      <div class="icon">⚡</div>
-      Skills & Proficiency
-    </div>
+  <section class="card reveal section-gap">
+    <h2 class="card-title"><span class="icon" aria-hidden="true">⚡</span>Skills &amp; proficiency</h2>
 
     <div class="skill" data-percent="91">
       <div class="skill-top">
-        <span class="skill-name">HTML & CSS</span>
+        <span class="skill-name">HTML &amp; CSS</span>
         <span class="skill-pct">91%</span>
       </div>
-      <div class="skill-bar-bg"><div class="skill-bar-fill"></div></div>
+      <div class="skill-bar-bg" role="progressbar" aria-label="HTML and CSS" aria-valuemin="0" aria-valuemax="100" aria-valuenow="91"><div class="skill-bar-fill"></div></div>
     </div>
 
     <div class="skill" data-percent="87">
@@ -341,7 +419,7 @@
         <span class="skill-name">Python</span>
         <span class="skill-pct">87%</span>
       </div>
-      <div class="skill-bar-bg"><div class="skill-bar-fill"></div></div>
+      <div class="skill-bar-bg" role="progressbar" aria-label="Python" aria-valuemin="0" aria-valuemax="100" aria-valuenow="87"><div class="skill-bar-fill"></div></div>
     </div>
 
     <div class="skill" data-percent="67">
@@ -349,86 +427,319 @@
         <span class="skill-name">JavaScript</span>
         <span class="skill-pct">67%</span>
       </div>
-      <div class="skill-bar-bg"><div class="skill-bar-fill"></div></div>
+      <div class="skill-bar-bg" role="progressbar" aria-label="JavaScript" aria-valuemin="0" aria-valuemax="100" aria-valuenow="67"><div class="skill-bar-fill"></div></div>
     </div>
-  </div>
+
+    <div class="skill" data-percent="60">
+      <div class="skill-top">
+        <span class="skill-name">C++ (Arduino &amp; ESP32)</span>
+        <span class="skill-pct">60%</span>
+      </div>
+      <div class="skill-bar-bg" role="progressbar" aria-label="C++" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><div class="skill-bar-fill"></div></div>
+    </div>
+  </section>
 
   <!-- PROJECTS -->
-  <div class="card reveal" style="margin-top:24px;">
-    <div class="card-title">
-      <div class="icon">🚀</div>
-      Testing Projects
-    </div>
+  <section class="card reveal section-gap">
+    <h2 class="card-title"><span class="icon" aria-hidden="true">🚀</span>Projects</h2>
     <div class="projects-grid">
-      <div class="project-card">
-        <div class="project-icon">🎯</div>
-        <div class="project-title">Shooter Game</div>
-        <div class="project-desc">A fun browser shooter made with HTML, CSS, and JavaScript.</div>
-        <a href="Shooter.html" class="project-btn">▶ Play Full Game</a>
-      </div>
-      <div class="project-card">
-        <div class="project-icon">🔢</div>
-        <div class="project-title">Math Games</div>
-        <div class="project-desc">A fun Math Games made with HTML, CSS, and JavaScript.</div>
-        <a href="Math.html" class="project-btn">▶ Play Full Game</a>
-      </div>
-      <div class="project-card">
-        <div class="project-icon">💵</div>
-        <div class="project-title">💰 Keuangan Projects 💰</div>
-        <div class="project-desc">A fun manage finances made with HTML, CSS, and JavaScript.</div>
-        <a href="Keuangan.html" class="project-btn">▶ Play Full Game</a>
-      </div>
-      <div class="project-card">
-        <div class="project-icon">🔗</div>
-        <div class="project-title">LinkInsert</div>
-        <div class="project-desc">A fun manage to save link made with HTML, CSS, and JavaScript.</div>
-        <a href="https://jibsreal.github.io/LinkInsert/" class="project-btn">▶ Play Full Game</a>
-      </div>
-      <div class="project-card coming-soon">
-        <div class="project-icon">❓</div>
-        <div class="project-title">???</div>
-        <div class="project-desc">Coming Soon.</div>
-      </div>
+      <article class="project-card">
+        <div class="project-icon" aria-hidden="true">🎯</div>
+        <h3 class="project-title">Shooter Game</h3>
+        <p class="project-desc">A fun browser shooter made with HTML, CSS, and JavaScript.</p>
+        <a href="Shooter.html" class="project-btn">▶ Play game</a>
+      </article>
+      <article class="project-card">
+        <div class="project-icon" aria-hidden="true">🔢</div>
+        <h3 class="project-title">Math Games</h3>
+        <p class="project-desc">A collection of math games made with HTML, CSS, and JavaScript.</p>
+        <a href="Math.html" class="project-btn">▶ Play game</a>
+      </article>
+      <article class="project-card">
+        <div class="project-icon" aria-hidden="true">💰</div>
+        <h3 class="project-title">Keuangan</h3>
+        <p class="project-desc">A simple finance manager made with HTML, CSS, and JavaScript.</p>
+        <a href="Keuangan.html" class="project-btn">▶ Open app</a>
+      </article>
+      <article class="project-card">
+        <div class="project-icon" aria-hidden="true">🔗</div>
+        <h3 class="project-title">LinkInsert</h3>
+        <p class="project-desc">A tool for saving your links, made with HTML, CSS, and JavaScript.</p>
+        <a href="https://jibsreal.github.io/LinkInsert/" class="project-btn" target="_blank" rel="noopener noreferrer">▶ Open app</a>
+      </article>
+      <article class="project-card coming-soon">
+        <div class="project-icon" aria-hidden="true">❓</div>
+        <h3 class="project-title">???</h3>
+        <p class="project-desc">Coming soon.</p>
+      </article>
     </div>
-  </div>
+  </section>
 
   <footer class="reveal">
-    Made by jibs <span class="heart">❤️</span> | &copy; 2025 Jibs
+    Made by jibs <span class="heart" aria-hidden="true">❤️</span> | &copy; <span id="year">2025</span> Jibs
   </footer>
 
-</div>
+</main>
 
 <script>
-  // Animate skill bars on scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting){
-        entry.target.classList.add('visible');
-        // animate bars inside
-        entry.target.querySelectorAll('.skill').forEach((skill, i) => {
-          const pct = skill.getAttribute('data-percent');
-          const bar = skill.querySelector('.skill-bar-fill');
-          setTimeout(() => { bar.style.width = pct + '%'; }, 200 + i * 150);
-        });
-      }
-    });
-  }, { threshold: 0.15 });
+  // Footer year
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Reveal sections and animate skill bars on scroll
+  function fillBars(root){
+    root.querySelectorAll('.skill').forEach((skill, i) => {
+      const bar = skill.querySelector('.skill-bar-fill');
+      const pct = skill.dataset.percent;
+      setTimeout(() => { bar.style.width = pct + '%'; }, reduceMotion ? 0 : 200 + i * 150);
+    });
+  }
+
+  const reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('visible');
+        fillBars(entry.target);
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.05, rootMargin: '0px 0px -5% 0px' });
+    reveals.forEach(el => observer.observe(el));
+  } else {
+    // Old browsers: just show everything
+    reveals.forEach(el => el.classList.add('visible'));
+    fillBars(document);
+  }
 
   // Floating particles
-  function createParticle(){
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = Math.random() * 100 + 'vw';
-    p.style.animationDuration = (Math.random() * 10 + 10) + 's';
-    p.style.opacity = Math.random() * 0.4 + 0.1;
-    p.style.width = p.style.height = (Math.random() * 4 + 2) + 'px';
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 20000);
+  if (!reduceMotion) {
+    const MAX_PARTICLES = 25;
+    function createParticle(){
+      if (document.hidden || document.querySelectorAll('.particle').length >= MAX_PARTICLES) return;
+      const p = document.createElement('div');
+      const size = Math.random() * 4 + 2;
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.width = p.style.height = size + 'px';
+      p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+      p.style.setProperty('--p-opacity', (Math.random() * 0.4 + 0.1).toFixed(2));
+      p.addEventListener('animationend', () => p.remove());
+      document.body.appendChild(p);
+    }
+    setInterval(createParticle, 800);
+    for (let i = 0; i < 15; i++) setTimeout(createParticle, i * 200);
   }
-  setInterval(createParticle, 800);
-  for(let i=0;i<15;i++) setTimeout(createParticle, i*200);
+
+  // ===== Avatar easter egg =====
+  (function(){
+    const btn = document.getElementById('avatarBtn');
+    const bubble = document.getElementById('bubble');
+    const hint = btn.querySelector('.hint');
+    const EMOJIS = ['✨','💜','🎮','⚡','🚀','♟️','🐍','🔌','💻','⭐'];
+    const QUIPS = ['Hehe!','Boop!','That tickles!','Hi there! 👋','Again?','Beep boop 🤖','Nice click!','Stop poking me 😆'];
+    const COLORS = ['#7c5cff','#2ad1d1','#f59e0b','#ef4444','#22c55e','#ec4899','#fff'];
+    const rand = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+    let clicks = 0, target = rand(15,20), bubbleTimer, partyTimer;
+
+    function say(text, ms=1300){
+      bubble.textContent = text;
+      bubble.classList.add('show');
+      clearTimeout(bubbleTimer);
+      bubbleTimer = setTimeout(() => bubble.classList.remove('show'), ms);
+    }
+
+    function restartClass(el, cls, ms){
+      el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+      setTimeout(() => el.classList.remove(cls), ms);
+    }
+
+    function burst(count){
+      if (reduceMotion) return;
+      const r = btn.getBoundingClientRect();
+      const cx = r.left + r.width/2, cy = r.top + r.height/2;
+      for (let i=0;i<count;i++){
+        const e = document.createElement('span');
+        e.className = 'pop-emoji';
+        e.textContent = EMOJIS[rand(0,EMOJIS.length-1)];
+        e.style.left = cx + 'px'; e.style.top = cy + 'px';
+        document.body.appendChild(e);
+        const ang = Math.random()*Math.PI*2, dist = rand(70,150);
+        const dx = Math.cos(ang)*dist, dy = Math.sin(ang)*dist - 40;
+        const anim = e.animate([
+          { transform:'translate(-50%,-50%) scale(.2)', opacity:1 },
+          { transform:`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.2) rotate(${rand(-60,60)}deg)`, opacity:1, offset:.6 },
+          { transform:`translate(calc(-50% + ${dx*1.1}px), calc(-50% + ${dy+60}px)) scale(.8)`, opacity:0 }
+        ], { duration: rand(700,1100), easing:'cubic-bezier(.2,.7,.3,1)' });
+        anim.onfinish = () => e.remove();
+      }
+    }
+
+    function confetti(){
+      if (reduceMotion) return;
+      for (let i=0;i<90;i++){
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random()*100 + 'vw';
+        c.style.background = COLORS[rand(0,COLORS.length-1)];
+        document.body.appendChild(c);
+        const drift = rand(-120,120);
+        const anim = c.animate([
+          { transform:'translate(0,0) rotate(0)', opacity:1 },
+          { transform:`translate(${drift}px, 110vh) rotate(${rand(360,1080)}deg)`, opacity:1 }
+        ], { duration: rand(1800,3200), delay: rand(0,600), easing:'cubic-bezier(.25,.5,.5,1)', fill:'backwards' });
+        anim.onfinish = () => c.remove();
+      }
+    }
+
+    function secret(n){
+      restartClass(btn, 'spin', 1500);
+      confetti();
+      burst(20);
+      document.body.classList.add('party');
+      clearTimeout(partyTimer);
+      partyTimer = setTimeout(() => document.body.classList.remove('party'), 4500);
+
+      let toast = document.getElementById('secretToast');
+      if (!toast){
+        toast = document.createElement('div');
+        toast.id = 'secretToast'; toast.className = 'secret-toast'; toast.setAttribute('role','status');
+        document.body.appendChild(toast);
+      }
+      toast.textContent = '🎉 Secret unlocked! You poked Jibs ' + n + ' times. Thanks for visiting!';
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => toast.classList.remove('show'), 4500);
+    }
+
+    // ----- Jumpscare -----
+    // Shocked-eyes GIFs from GIPHY (shuffled each page load so the scare isn't always the same one).
+    // If every one fails to load, it falls back to jumpscare.gif in your folder, then a big 😱.
+    const GIPHY_IDS = [
+      'Gl7mfimOjkkGl5mMDS',  // shocked face
+      'QFGXcWa7s7ROUAfYkJ',  // shocked eyes, open mouth
+      '7nJXSoz6CHQlSvWoZX',  // wide eyes, zoom in
+      'bV7B0LGkQZlEDQmekc',  // shocked big eyes
+      'bxRr9ErEaEnKYjd3gd',  // shocked cat
+      '28rJgBIlnM7ScSGAA7'   // shock
+    ];
+    for (let i = GIPHY_IDS.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [GIPHY_IDS[i], GIPHY_IDS[j]] = [GIPHY_IDS[j], GIPHY_IDS[i]];
+    }
+    const SCARE_SRCS = GIPHY_IDS.map(id => 'https://media.giphy.com/media/' + id + '/giphy.gif')
+      .concat(['jumpscare.gif']);
+    let scareEl, scareImg, scareEmoji, scareFlash, scareOpen = false, scareTimer, scareDone, scareReady = false;
+
+    function buildScare(){
+      if (scareEl) return;
+      scareEl = document.createElement('div');
+      scareEl.className = 'scare';
+      scareEl.setAttribute('role','dialog');
+      scareEl.setAttribute('aria-modal','true');
+      scareEl.setAttribute('aria-label','Surprise!');
+      scareEl.innerHTML =
+        '<div class="scare-inner">' +
+          '<img alt="Shocked reaction GIF" decoding="async">' +
+          '<div class="scare-emoji" aria-hidden="true">😱</div>' +
+          '<div class="scare-text">BOO!</div>' +
+        '</div>' +
+        '<div class="scare-hint">Click anywhere or press Esc to close</div>';
+      scareImg = scareEl.querySelector('img');
+      scareEmoji = scareEl.querySelector('.scare-emoji');
+      scareFlash = document.createElement('div');
+      scareFlash.className = 'scare-flash';
+      document.body.appendChild(scareEl);
+      document.body.appendChild(scareFlash);
+      scareEl.addEventListener('click', closeScare);
+      scareImg.addEventListener('error', () => {
+        const i = Number(scareImg.dataset.i || 0) + 1;
+        if (i < SCARE_SRCS.length){ scareImg.dataset.i = i; scareImg.src = SCARE_SRCS[i]; }
+        else { scareImg.style.display = 'none'; scareEmoji.style.display = 'block'; }
+      });
+      scareImg.addEventListener('load', () => { scareReady = true; });
+    }
+
+    // Start downloading the (large) GIF a few clicks early so it appears instantly
+    function preloadScare(){
+      buildScare();
+      if (!scareImg.getAttribute('src')){ scareImg.dataset.i = 0; scareImg.src = SCARE_SRCS[0]; }
+    }
+
+    function sting(){
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        const ctx = new AC(), t = ctx.currentTime;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+        g.connect(ctx.destination);
+        [220, 233, 311].forEach(f => {
+          const o = ctx.createOscillator();
+          o.type = 'sawtooth';
+          o.frequency.setValueAtTime(f * 2, t);
+          o.frequency.exponentialRampToValueAtTime(f, t + 0.6);
+          o.connect(g); o.start(t); o.stop(t + 0.95);
+        });
+        const len = Math.floor(ctx.sampleRate * 0.25);
+        const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = (Math.random()*2 - 1) * (1 - i/len);
+        const n = ctx.createBufferSource(); n.buffer = buf; n.connect(g); n.start(t);
+        setTimeout(() => ctx.close(), 1300);
+      } catch(e) {}
+    }
+
+    function jumpscare(done){
+      buildScare();
+      if (!scareImg.getAttribute('src')){ scareImg.dataset.i = 0; scareImg.src = SCARE_SRCS[0]; }
+      scareDone = done; scareOpen = true;
+      scareEl.classList.remove('show'); void scareEl.offsetWidth;
+      scareEl.classList.add('show');
+      if (!reduceMotion){
+        scareFlash.classList.remove('go'); void scareFlash.offsetWidth; scareFlash.classList.add('go'); // one brief flash, no strobing
+      }
+      sting();
+      if (navigator.vibrate) navigator.vibrate([120, 60, 200]);
+      clearTimeout(scareTimer);
+      scareTimer = setTimeout(closeScare, 3800);
+    }
+
+    function closeScare(){
+      if (!scareOpen) return;
+      scareOpen = false;
+      clearTimeout(scareTimer);
+      scareEl.classList.remove('show');
+      const cb = scareDone; scareDone = null;
+      if (cb) setTimeout(cb, 200);
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeScare(); });
+
+    function poke(){
+      clicks++;
+      if (hint) hint.style.display = 'none';
+      if (clicks === 8) preloadScare();
+      if (clicks >= target){
+        const n = clicks;
+        clicks = 0; target = rand(15,20);
+        jumpscare(() => secret(n));
+        return;
+      }
+      restartClass(btn, 'squish', 350);
+      burst(clicks > target - 4 ? 12 : 6);
+      if (clicks === 5) say('Hehe, that tickles!');
+      else if (clicks === 10) say("You're persistent 👀");
+      else if (clicks === target - 3) say('Something is about to happen... 👀', 1600);
+      else say(QUIPS[rand(0,QUIPS.length-1)] + '  ×' + clicks);
+    }
+
+    btn.addEventListener('click', poke);
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); poke(); }
+    });
+  })();
 </script>
 
 </body>
