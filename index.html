@@ -482,7 +482,46 @@
 </main>
 
 <script>
-  // Footer year
+  // ============ VISITOR LOGGING (country → Formspree) ============
+  // Replace YOUR_FORM_ID with the ID from formspree.io/f/xxxxxx
+  const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+
+  async function logVisit() {
+    try {
+      // 1. Get country via free geolocation API (no key needed)
+      const geoRes = await fetch('https://geo.kamero.ai/api/geo');
+      const geo = await geoRes.json();
+
+      // 2. Build the record
+      const payload = {
+        country: geo.country || 'Unknown',        // e.g. "ID"
+        country_name: geo.country_name || '',
+        region: geo.region || '',
+        city: geo.city || '',
+        time: new Date().toISOString(),
+        page: window.location.pathname || '/',
+        referrer: document.referrer || 'direct'
+      };
+
+      // 3. POST to Formspree (fire-and-forget, never blocks UI)
+      fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(() => {});
+
+      console.log('📍 Visit logged:', payload.country, payload.time);
+    } catch (e) {
+      // Fail silently — user experience is more important
+      console.log('Visit logging skipped:', e.message);
+    }
+  }
+
+  // Run once per page load
+  logVisit();
+
+  // ============ FOOTER YEAR ============
   document.getElementById('year').textContent = new Date().getFullYear();
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -508,7 +547,6 @@
     }, { threshold: 0.05, rootMargin: '0px 0px -5% 0px' });
     reveals.forEach(el => observer.observe(el));
   } else {
-    // Old browsers: just show everything
     reveals.forEach(el => el.classList.add('visible'));
     fillBars(document);
   }
@@ -613,15 +651,13 @@
     }
 
     // ----- Jumpscare -----
-    // Shocked-eyes GIFs from GIPHY (shuffled each page load so the scare isn't always the same one).
-    // If every one fails to load, it falls back to jumpscare.gif in your folder, then a big 😱.
     const GIPHY_IDS = [
-      'Gl7mfimOjkkGl5mMDS',  // shocked face
-      'QFGXcWa7s7ROUAfYkJ',  // shocked eyes, open mouth
-      '7nJXSoz6CHQlSvWoZX',  // wide eyes, zoom in
-      'bV7B0LGkQZlEDQmekc',  // shocked big eyes
-      'bxRr9ErEaEnKYjd3gd',  // shocked cat
-      '28rJgBIlnM7ScSGAA7'   // shock
+      'Gl7mfimOjkkGl5mMDS',
+      'QFGXcWa7s7ROUAfYkJ',
+      '7nJXSoz6CHQlSvWoZX',
+      'bV7B0LGkQZlEDQmekc',
+      'bxRr9ErEaEnKYjd3gd',
+      '28rJgBIlnM7ScSGAA7'
     ];
     for (let i = GIPHY_IDS.length - 1; i > 0; i--){
       const j = Math.floor(Math.random() * (i + 1));
@@ -660,7 +696,6 @@
       scareImg.addEventListener('load', () => { scareReady = true; });
     }
 
-    // Start downloading the (large) GIF a few clicks early so it appears instantly
     function preloadScare(){
       buildScare();
       if (!scareImg.getAttribute('src')){ scareImg.dataset.i = 0; scareImg.src = SCARE_SRCS[0]; }
@@ -699,7 +734,7 @@
       scareEl.classList.remove('show'); void scareEl.offsetWidth;
       scareEl.classList.add('show');
       if (!reduceMotion){
-        scareFlash.classList.remove('go'); void scareFlash.offsetWidth; scareFlash.classList.add('go'); // one brief flash, no strobing
+        scareFlash.classList.remove('go'); void scareFlash.offsetWidth; scareFlash.classList.add('go');
       }
       sting();
       if (navigator.vibrate) navigator.vibrate([120, 60, 200]);
