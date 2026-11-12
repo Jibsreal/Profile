@@ -1,0 +1,31 @@
+name: Save GitHub Traffic
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # Runs once daily at midnight UTC
+  workflow_dispatch:        # Also can be manually triggered
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - name: Fetch traffic from GitHub API
+        run: |
+          curl -s -H "Authorization: Bearer ${{ secrets.TRAFFIC_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/traffic/views \
+            > traffic.json
+          cat traffic.json
+
+      - name: Commit traffic.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add traffic.json
+          git diff --staged --quiet || git commit -m "Update traffic data"
+          git push
