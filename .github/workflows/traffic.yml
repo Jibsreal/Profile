@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ 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 }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
       - name: Fetch traffic from GitHub API
