@@ -1,1 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Visitor Logs</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#060d1a; --bg-mid:#0a1628; --bg-card:#0d1b2e;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#7c5cff; --accent2:#2ad1d1;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:linear-gradient(180deg,var(--bg-deep),var(--bg-mid));
+    color:var(--text); min-height:100vh; padding:32px 20px;
+  }
+  .wrap{max-width:1000px; margin:0 auto;}
+  h1{font-size:1.6rem; margin-bottom:6px;}
+  .sub{color:var(--muted); font-size:.9rem; margin-bottom:24px;}
+  .toolbar{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:center;}
+  button, .btn{
+    background:linear-gradient(135deg,rgba(124,92,255,.3),rgba(42,209,209,.2));
+    border:1px solid rgba(124,92,255,.3); color:#fff;
+    padding:9px 18px; border-radius:10px; font-size:.88rem; font-weight:500;
+    cursor:pointer; transition:.2s;
+  }
+  button:hover{transform:translateY(-2px); box-shadow:0 6px 20px rgba(124,92,255,.25);}
+  .status{color:var(--muted); font-size:.85rem;}
+  .error{color:#ef4444;}
+  .card{
+    background:var(--bg-card); border-radius:var(--radius);
+    border:1px solid rgba(255,255,255,.05);
+    overflow:hidden;
+  }
+  table{width:100%; border-collapse:collapse; font-size:.87rem;}
+  th, td{padding:12px 16px; text-align:left; border-bottom:1px solid rgba(255,255,255,.05);}
+  th{
+    background:rgba(124,92,255,.08); color:#c4b5fd;
+    font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em;
+  }
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .flag{font-size:1.2rem; margin-right:6px;}
+  .badge{
+    display:inline-block; padding:2px 8px; border-radius:6px; font-size:.75rem;
+    background:rgba(42,209,209,.15); color:var(--accent2);
+  }
+  .empty{padding:40px; text-align:center; color:var(--muted);}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px;}
+  .stat{
+    background:var(--bg-card); border-radius:12px; padding:16px;
+    border:1px solid rgba(255,255,255,.05);
+  }
+  .stat-label{font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;}
+  .stat-value{font-size:1.5rem; font-weight:700; margin-top:4px; color:#c4b5fd;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📊 Visitor Logs</h1>
+  <p class="sub">Data from Formspree. Refresh to see new visits.</p>
 
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total visits</div><div class="stat-value" id="statTotal">—</div></div>
+    <div class="stat"><div class="stat-label">Countries</div><div class="stat-value" id="statCountries">—</div></div>
+    <div class="stat"><div class="stat-label">Last visit</div><div class="stat-value" id="statLast" style="font-size:1rem">—</div></div>
+  </div>
+
+  <div class="toolbar">
+    <button id="refreshBtn">🔄 Refresh</button>
+    <span class="status" id="status">Loading…</span>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Country</th>
+          <th>City / Region</th>
+          <th>Page</th>
+          <th>Referrer</th>
+        </tr>
+      </thead>
+      <tbody id="logsBody">
+        <tr><td colspan="5" class="empty">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  //  CONFIG — replace these two values
+  // ============================================================
+  const FORM_HASHID = 'YOUR_FORM_HASHID';   // e.g. "xabc1234"
+  const API_KEY     = 'YOUR_API_KEY';       // Formspree API key (paid plan)
+
+  // Convert ISO country code → emoji flag
+  function flag(code){
+    if (!code || code.length !== 2) return '🌐';
+    return code.toUpperCase().replace(/./g, c =>
+      String.fromCodePoint(127397 + c.charCodeAt(0))
+    );
+  }
+
+  function fmtTime(iso){
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, {
+      year:'numeric', month:'short', day:'2-digit',
+      hour:'2-digit', minute:'2-digit'
+    });
+  }
+
+  async function loadLogs(){
+    const statusEl = document.getElementById('status');
+    const tbody = document.getElementById('logsBody');
+    statusEl.textContent = 'Loading…';
+    statusEl.classList.remove('error');
+
+    try {
+      const res = await fetch(
+        `https://formspree.io/api/0/forms/${FORM_HASHID}/submissions?limit=100`,
+        { headers: { 'Authorization': 'Basic ' + btoa(':' + API_KEY) } }
+      );
+
+      if (!res.ok){
+        const txt = await res.text();
+        throw new Error(`HTTP ${res.status} — ${txt.slice(0,120)}`);
+      }
+
+      const data = await res.json();
+      const subs = (data.submissions || []).slice().reverse(); // newest first
+
+      // Stats
+      document.getElementById('statTotal').textContent = subs.length;
+      const countries = new Set(subs.map(s => s.country).filter(Boolean));
+      document.getElementById('statCountries').textContent = countries.size;
+      document.getElementById('statLast').textContent =
+        subs[0] ? fmtTime(subs[0]._date) : '—';
+
+      if (!subs.length){
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">No visits recorded yet.</td></tr>';
+        statusEl.textContent = 'Loaded — 0 records.';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      subs.forEach(sub => {
+        const tr = document.createElement('tr');
+        const c = (sub.country || '').toUpperCase();
+        tr.innerHTML = `
+          <td>${fmtTime(sub._date)}</td>
+          <td><span class="flag">${flag(c)}</span>${c || 'Unknown'} <span class="badge">${sub.country_name || ''}</span></td>
+          <td>${[sub.city, sub.region].filter(Boolean).join(', ') || '—'}</td>
+          <td>${sub.page || '/'}</td>
+          <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ${sub.referrer || 'direct'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      statusEl.textContent = `Loaded ${subs.length} records.`;
+    } catch (err){
+      console.error(err);
+      statusEl.textContent = 'Error: ' + err.message;
+      statusEl.classList.add('error');
+      tbody.innerHTML = `<tr><td colspan="5" class="empty error">
+        Could not load data.<br>
+        Check FORM_HASHID / API_KEY, and that your plan supports the read API.
+      </td></tr>`;
+    }
+  }
+
+  document.getElementById('refreshBtn').addEventListener('click', loadLogs);
+  loadLogs();
+</script>
+</body>
+</html>
